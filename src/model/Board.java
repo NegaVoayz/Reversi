@@ -5,98 +5,115 @@ import view.Pixel;
 
 public class Board{
     public enum Player{
-        White,
-        Black
+        WHITE,
+        NONE,
+        BLACK,
     }
+    
+    private static final int MAX_BOARD_SIZE = 16;
+    private static final int DEFAULT_BOARD_SIZE = 8;
 
-    private Piece grid[][];
+    private Piece pieceGrid[][];
     private Canvas canvas;
     private int height;
     private int width;
-    private Player current_player;
-    private String white_player_name;
-    private String black_player_name;
-    private boolean end;
+    private Player currentPlayer;
+    private String whitePlayerName;
+    private String blackPlayerName;
+    private boolean isGameOver;
 
-    // initiallization
     public Board(int height, int width) {
-        if(height < 0 || height > 16 ||
-            width < 0 || width > 16 ) {
-            height = 8;
-            width = 8;
+        if(height < 0 || height > MAX_BOARD_SIZE ||
+            width < 0 || width > MAX_BOARD_SIZE ) {
+            throw new IllegalArgumentException("Invalid board size: too large or negative");
+        }
+        if(height == 0) {
+            height = DEFAULT_BOARD_SIZE;
+        }
+        if(width == 0) {
+            width = DEFAULT_BOARD_SIZE;
         }
         this.height = height;
         this.width = width;
-        this.current_player = Player.Black;
-        grid = new Piece[height+2][width+2];
+        this.currentPlayer = Player.BLACK;
+        pieceGrid = new Piece[height+2][width+2];
         canvas = new Canvas(height+2, width+2);
-        init_canvas();
-        init_grid();
+        initializeCanvas();
+        initializeGrid();
 
-        update_pieces();
-        // well, it's possible some special grid size
+        updateBoard();
+        // well, it's possible some special pieceGrid size
         //   could cause an immediate endgame
-        this.end = !get_vaild_moves(false);
+        if(!getValidMoves()) {
+            switchPlayer();
+            this.isGameOver = !getValidMoves();
+        } else {
+            this.isGameOver = false;
+        }
     }
 
-    // set players' name
-    public void setName(String white_player_name, String black_player_name) {
-        this.white_player_name = white_player_name;
-        this.black_player_name = black_player_name;
+    public void setName(String whitePlayerName, String blackPlayerName) {
+        this.whitePlayerName = whitePlayerName;
+        this.blackPlayerName = blackPlayerName;
     }
 
-    // check whether game ends
-    public boolean end() {
-        return end;
+    public boolean isGameOver() {
+        return isGameOver;
     }
 
-    // try lay piece at the position given
-    // return true if succeeded
-    public boolean lay_piece(int x, int y) {
-        if(x <= 0 || x > width) {
+    /**
+     * try place piece at the position given
+     * @param col column position
+     * @param row row position
+     */
+    public boolean placePiece(int col, int row) {
+        if( col <= 0 || col > width ||
+            row <= 0 || row > height ||
+            !pieceGrid[row][col].isValid(getCurrentPlayerPieceType())) {
             return false;
         }
-        if(y <= 0 || y > height) {
-            return false;
-        }
-        if(!grid[y][x].is_valid(get_piece_color())) {
-            return false;
-        }
-        grid[y][x].lay_piece(get_piece_color());
-        change_player();
-        update_pieces();
-        if(!get_vaild_moves(false)) {
-            this.end = true;
+        pieceGrid[row][col].placePiece(getCurrentPlayerPieceType());
+        switchPlayer();
+        updateBoard();
+        if(!getValidMoves()) {
+            switchPlayer();
+            this.isGameOver = !getValidMoves();
         }
         return true;
     }
 
-    // general paint
+    /**
+     * paint game window
+     */
     public void paint() {
         canvas.paint(true);
-        if(end()) {
-            show_winner_info(get_winner());
+        if(isGameOver) {
+            displayWinnerInfo(getWinner());
         } else {
-            show_player_info();
+            displayPlayerInfo();
         }
     }
 
-    // allocate grid and set the start pieces
-    private void init_grid() {
+    /**
+     * allocate pieceGrid and set the start pieces
+     */
+    private void initializeGrid() {
         for(int i = 0; i < height+2; i++) {
             for(int j = 0; j < width+2; j++) {
-                grid[i][j] = new Piece(j, i, grid);
+                pieceGrid[i][j] = new Piece(j, i, pieceGrid);
             }
         }
 
-        grid[height/2][width/2].setType(Piece.Type.White);
-        grid[height/2][width/2+1].setType(Piece.Type.Black);
-        grid[height/2+1][width/2].setType(Piece.Type.Black);
-        grid[height/2+1][width/2+1].setType(Piece.Type.White);
+        pieceGrid[height/2][width/2].setType(Piece.Type.WHITE);
+        pieceGrid[height/2][width/2+1].setType(Piece.Type.BLACK);
+        pieceGrid[height/2+1][width/2].setType(Piece.Type.BLACK);
+        pieceGrid[height/2+1][width/2+1].setType(Piece.Type.WHITE);
     }
 
-    // show edge scales
-    private void init_canvas() {
+    /**
+     * show edge scales
+     */
+    private void initializeCanvas() {
         for(int i = 1; i <= height && i <= 9; i++) {
             canvas.setPixel(0, i, new Pixel((char)(48+i)));
         }
@@ -108,80 +125,81 @@ public class Board{
         }
     }
 
-    // change player when his turn ends
-    private void change_player(){
-        if(current_player == Player.White) {
-            current_player = Player.Black;
+    /**
+     * switch player when his turn ends
+     */
+    private void switchPlayer(){
+        if(currentPlayer == Player.WHITE) {
+            currentPlayer = Player.BLACK;
         } else {
-            current_player = Player.White;
+            currentPlayer = Player.WHITE;
         }
         return;
     }
 
-    // get current player's piece color
-    // actually convert player type to piece type
-    private Piece.Type get_piece_color(){
-        if(current_player == Player.White) {
-            return Piece.Type.White;
+    /**
+     * get current player's piece color
+     * actually convert player type to piece type
+     * @return piece color
+     */
+    private Piece.Type getCurrentPlayerPieceType(){
+        if(currentPlayer == Player.WHITE) {
+            return Piece.Type.WHITE;
         } else {
-            return Piece.Type.Black;
+            return Piece.Type.BLACK;
         }
     }
 
-    // update pieces on canvas
-    private void update_pieces() {
+    /**
+     * update pieces on canvas
+     */
+    private void updateBoard() {
         for(int i = 1; i <= height; i++) {
             for(int j = 1; j <= width; j++) {
-                canvas.setPixel(j, i, grid[i][j].getPixel());
+                canvas.setPixel(j, i, pieceGrid[i][j].getPixel());
             }
         }
     }
 
-    // get and show valid moves for current player
-    // automatically skip turns if no moves valid
-    // if both players have no valid moves, set game end
-    private boolean get_vaild_moves(boolean skipped) {
+    /**
+     * get and show valid moves for current player
+     * @return true when there are any moves valid
+     */
+    private boolean getValidMoves() {
         boolean movable = false;
         Piece.Type type;
-        if(current_player == Player.White) {
-            type = Piece.Type.White;
-        } else {
-            type = Piece.Type.Black;
-        }
+        type = getCurrentPlayerPieceType();
+
         for(int i = 1; i <= height; i++) {
             for(int j = 1; j <= width; j++) {
-                if(grid[i][j].is_valid(type)) {
+                if(pieceGrid[i][j].isValid(type)) {
                     movable = true;
-                    canvas.setPixel(j, i, new Pixel('·'));
+                    canvas.setPixel(j, i, new Pixel(Piece.VALID_MOVE));
                 }
             }
         }
-        if(movable) {
-            return true;
-        }
-        if(skipped) {
-            return false;
-        }
-        change_player();
-        return get_vaild_moves(true);
+
+        return movable;
     }
 
-    // show player info and current player while playing
-    private void show_player_info() {
-        System.out.print("White Player: " + white_player_name + " ");
-        if(current_player == Player.White) {
-            System.out.print(Piece.white_piece);
+    /**
+     * show player info and the current player while playing
+     */
+    private void displayPlayerInfo() {
+        System.out.print("White Player: " + whitePlayerName + " ");
+        if(currentPlayer == Player.WHITE) {
+            System.out.print(Piece.WHITE_PIECE);
         }
         System.out.println();
 
-        System.out.print("Black Player: " + black_player_name + " ");
-        if(current_player == Player.Black) {
-            System.out.print(Piece.black_piece);
+        System.out.print("Black Player: " + blackPlayerName + " ");
+        if(currentPlayer == Player.BLACK) {
+            System.out.print(Piece.BLACK_PIECE);
         }
         System.out.println();
         
         System.out.print("Current Player:");
-        if(current_player == Player.White) {
+        if(currentPlayer == Player.WHITE) {
             System.out.print("White");
         } else {
             System.out.print("Black");
@@ -189,33 +207,39 @@ public class Board{
         System.out.println();
     }
 
-
-    private void show_winner_info(Piece.Type type) {
+    /**
+     * show who is the winner
+     * @param type the winner
+     */
+    private void displayWinnerInfo(Player type) {
         switch(type) {
-            case Piece.Type.White:
-                System.out.println("White Wins\nCongratulations! " + white_player_name);
+            case Player.WHITE:
+                System.out.println("White Wins\nCongratulations! " + whitePlayerName);
                 break;
-            case Piece.Type.Black:
-                System.out.println("Black Wins\nCongratulations! " + black_player_name);
+            case Player.BLACK:
+                System.out.println("Black Wins\nCongratulations! " + blackPlayerName);
                 break;
-            case Piece.Type.None:
+            case Player.NONE:
                 System.out.println("Draw\nCool");
                 break;
         }
     }
 
-    // count pieces and return the winner
-    private Piece.Type get_winner() {
-        int white_piece_count = 0;
-        int black_piece_count = 0;
+    /**
+     * count pieces and return the winner
+     * @return the winner
+     */
+    private Player getWinner() {
+        int whitePieceCount = 0;
+        int blackPieceCount = 0;
         for(int i = 1; i <= height; i++) {
             for(int j = 1; j <= width; j++) {
-                switch (grid[i][j].getType()) {
-                    case Piece.Type.White:
-                        white_piece_count++;
+                switch (pieceGrid[i][j].getType()) {
+                    case Piece.Type.WHITE:
+                        whitePieceCount++;
                         break;
-                    case Piece.Type.Black:
-                        black_piece_count++;
+                    case Piece.Type.BLACK:
+                        blackPieceCount++;
                         break;
                     default:
                         break;
@@ -223,17 +247,16 @@ public class Board{
             }
         }
 
-        if(white_piece_count > black_piece_count) {
-            return Piece.Type.White;
+        if(whitePieceCount > blackPieceCount ) {
+            return Player.WHITE;
         }
-        if(white_piece_count == black_piece_count) {
-            return Piece.Type.None;
+        if(whitePieceCount == blackPieceCount ) {
+            return Player.NONE;// draw
         }
-        if(white_piece_count < black_piece_count) {
-            return Piece.Type.Black;
+        if(whitePieceCount < blackPieceCount ) {
+            return Player.BLACK;
         }
-        // to comfort the compiler
-        // never used
-        return Piece.Type.None;
+        // to comfort vs code
+        throw new IllegalStateException("How the hell do you come here?");
     }
 }

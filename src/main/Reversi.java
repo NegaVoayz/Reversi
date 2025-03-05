@@ -6,9 +6,16 @@ import view.Canvas;
 import model.Board;
 
 public class Reversi{
-    private static String get_name(Board.Player player, Scanner scanner) {
-        Canvas.clear_screen();
-        if(player == Board.Player.White) {
+    /**
+     * Retrieves the name of the player.
+     *
+     * @param player The player whose name is to be retrieved.
+     * @param scanner The scanner object to read input from the user.
+     * @return The name of the player.
+     */
+    private static String getName(Board.Player player, Scanner scanner) {
+        Canvas.clearScreen();
+        if(player == Board.Player.WHITE) {
             System.out.println("[You Play White]");
         } else {
             System.out.println("[You Play Black]");
@@ -20,64 +27,116 @@ public class Reversi{
         scanner.close();
         return "";
     }
+
+    /**
+     * Prompts the players to input their names and sets them on the board.
+     *
+     * @param scanner The scanner object to read input from the user.
+     * @param board The board object where player names will be set.
+     */
+    private static void inputPlayerNames(Scanner scanner, Board board) {
+        String whitePlayerName;
+        String blackPlayerName;
+
+        whitePlayerName = getName(Board.Player.WHITE, scanner);
+        if(whitePlayerName == "") {
+            return;
+        }
+        blackPlayerName = getName(Board.Player.BLACK, scanner);
+        if(blackPlayerName == "") {
+            return;
+        }
+        board.setName(whitePlayerName, blackPlayerName);
+    }
+
+    /**
+     * Retrieves the input decision from the player.
+     *
+     * @param scanner The scanner object to read input from the user.
+     * @return The player's decision as a string.
+     */
+    private static String getInput(Scanner scanner) {
+        System.out.print("your decision is: ");
+        // if player get bored, die
+        if(!scanner.hasNext()) {
+            return "wohohohoho";
+        }
+        return scanner.nextLine();
+    }
+
+    /**
+     * Converts a column character code to its corresponding integer value.
+     *
+     * @param code The character code representing the column.
+     * @return The integer value of the column.
+     */
+    private static int getCol(char code) {
+        return (int)code-'A'+1;
+    }
+
+    /**
+     * Converts a row character code to its corresponding integer value.
+     *
+     * @param code The character code representing the row.
+     * @return The integer value of the row.
+     */
+    private static int getRow(char code) {
+        if(code > '9') {
+            return (int)code-'a'+10;
+        } else {
+            return (int)code-'0';
+        }
+    }
+
+    /**
+     * Prompts the player to input a position to place their piece and validates the input.
+     *
+     * @param scanner The scanner object to read input from the user.
+     * @param board The board object where the piece will be placed.
+     * @return True if the position is valid and the piece is placed successfully
+     */
+    private static boolean inputPlacePosition(Scanner scanner, Board board) {
+        int col;
+        int row;
+        String input;
+
+        input = getInput(scanner);
+
+        if(input.length() != 2) {
+            System.out.println("oOps! invalid move");
+            return false;
+        }
+    
+        col = getCol(input.charAt(1));
+        row = getRow(input.charAt(0));
+
+        // location validation check done in "placePiece" function
+        if(!board.placePiece(col,row)) {
+            System.out.println("oOps! invalid move");
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * The main method to run the Reversi game.
+     *
+     * @param args Command line arguments.
+     */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        Board game = new Board(8, 8);
-        
-        // get names
-        {
-            String white_player_name = get_name(Board.Player.White, scanner);
-            if(white_player_name == "") {
-                return;
-            }
-            String black_player_name = get_name(Board.Player.Black, scanner);
-            if(black_player_name == "") {
-                return;
-            }
-            game.setName(white_player_name, black_player_name);
-        }
-        
-        game.paint();
+        Board board = new Board(8, 8);
 
-        // main loop
-        while(!game.end()) {
-            int x;
-            int y;
-            
-            // convert input
-            {
-                String str;
-                System.out.print("your decision is: ");
-                // if player get bored, die
-                if(!scanner.hasNext()) {
-                    break;
-                }
-                str = scanner.nextLine();
+        inputPlayerNames(scanner, board);
 
-                // input validation check
-                if(str.length() != 2) {
-                    System.out.println("oOps! invalid move");
-                    continue;
-                }
-            
-                // calculate location
-                x = (int)str.charAt(1)-64;
-                if(str.charAt(0) > '9') {
-                    y = (int)str.charAt(0)-87;
-                } else {
-                    y = (int)str.charAt(0)-48;
-                }
-            }
+        board.paint();
 
-            // location validation check done in "lay_piece" function
-            if(!game.lay_piece(x,y)) {
-                System.out.println("oOps! invalid move");
+        while(!board.isGameOver()) {
+            if( !inputPlacePosition(scanner, board) ) {
                 continue;
             }
-
-            // paint game scene
-            game.paint();
+            board.paint();
         }
         scanner.close();
         return;

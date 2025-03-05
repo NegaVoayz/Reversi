@@ -4,84 +4,93 @@ import view.Pixel;
 
 public class Piece {
     enum Type{
-        White,
-        None,
-        Black,
+        WHITE,
+        NONE,
+        BLACK,
     }
     
-    public final static char none_piece = ' ';
-    public final static char white_piece = '○';
-    public final static char black_piece = '●';
-    public final static int directions[][] = {
-        {1,1},
-        {1,0},
-        {1,-1},
-        {0,1},
-        {0,-1},
-        {-1,1},
-        {-1,0},
-        {-1,-1}
+    public final static char NONE_PIECE = ' ';
+    public final static char WHITE_PIECE = '○';
+    public final static char BLACK_PIECE = '●';
+    public final static char VALID_MOVE = '·';
+    public final static int DIRECTIONS[][] = {
+        {1,1},  {1,0},  {1,-1},
+        {0,1},          {0,-1},
+        {-1,1}, {-1,0}, {-1,-1}
     };
 
     //to gain access to neibours
-    private Piece[][] grid;
-    private Type type;
-    private int x;
-    private int y;
+    private Piece[][] pieceGrid;
+    private Piece.Type type;
+    private int col;
+    private int row;
 
-    public Piece(int x, int y, Piece[][] grid) {
-        this.type = Type.None;
-        this.x = x;
-        this.y = y;
-        this.grid = grid;
+    public Piece(int col, int row, Piece[][] pieceGrid) {
+        this.type = Piece.Type.NONE;
+        this.col = col;
+        this.row = row;
+        this.pieceGrid = pieceGrid;
     }
 
-    // manually set piece type
-    // designed for grid initialization
-    public void setType(Type type) {
+    /**
+     * manually set piece type
+     * designed for pieceGrid initialization
+     * @param type Piece.type
+     */
+    public void setType(Piece.Type type) {
         this.type = type;
     }
 
-    public Type getType() {
+    public Piece.Type getType() {
         return this.type;
     }
 
-    // What Color.
+    /**
+     * Get the pixel form of this piece
+     * @return Pixel
+     */
     public Pixel getPixel() {
         switch (this.type) {
-            case Type.White:
-                return new Pixel(white_piece);
-            case Type.Black:
-                return new Pixel(black_piece);
+            case Piece.Type.WHITE:
+                return new Pixel(WHITE_PIECE);
+            case Piece.Type.BLACK:
+                return new Pixel(BLACK_PIECE);
             default:
-                return new Pixel(none_piece);
+                return new Pixel(NONE_PIECE);
         }
     }
 
-    // validation check function
-    public boolean is_valid(Type expected_type) {
-        if(this.type != Type.None) {
+    /**
+     * Check whether it is a valid move to place piece here
+     * @param expected_type the expected type of piece
+     * @return true when valid
+     */
+    public boolean isValid(Piece.Type expected_type) {
+        if(this.type != Piece.Type.NONE) {
             return false;
         }
         for(int i = 0; i < 8; i++) {
-            int dx = directions[i][0];
-            int dy = directions[i][1];
-            if(grid[y+dy][x+dx].flip(dx, dy, expected_type, false)>0) {
+            int dx = DIRECTIONS[i][0];
+            int dy = DIRECTIONS[i][1];
+            if(pieceGrid[row+dy][col+dx].flipPieces(dx, dy, expected_type, false)>0) {
                 return true;
             }
         }
         return false;
     }
 
-    // require validation check
-    // lay piece and automatically flip pieces
-    public int lay_piece(Type type) {
+    /**
+     * set your piece and flip the pieces
+     * @param type the type of piece you want to place here
+     * @return the number of pieces you've flipped
+     */
+    public int placePiece(Piece.Type type) {
         this.type = type;
         int count = 0;
         for(int i = 0; i < 8; i++) {
-            int dx = directions[i][0];
-            int dy = directions[i][1];
-            int temp = grid[y+dy][x+dx].flip(dx, dy, type, true);
+            int dx = DIRECTIONS[i][0];
+            int dy = DIRECTIONS[i][1];
+            int temp = pieceGrid[row+dy][col+dx].flipPieces(dx, dy, type, true);
             if(temp > 0) {
                 count += temp;
             }
@@ -89,10 +98,16 @@ public class Piece {
         return count;
     }
 
-    // recursively check whether a flip is possible
-    // apply change used to check.
-    private int flip(int dx, int dy, Type type, boolean apply_change) {
-        if(this.type == Type.None) {
+    /**
+     * recursively check/do a flip
+     * @param dx direction on column
+     * @param dy direction on row
+     * @param type piece type of the original piece
+     * @param applyChange flip the pieces or not
+     * @return the number of pieces (could be) flipped (negative means operation failed)
+     */
+    private int flipPieces(int dx, int dy, Piece.Type type, boolean applyChange) {
+        if(this.type == Piece.Type.NONE) {
             return -1; 
         }
         if(this.type == type) {
@@ -100,21 +115,16 @@ public class Piece {
         }
 
         // try flip next
-        int ans = grid[y+dy][x+dx].flip(dx, dy, type, apply_change);
+        int ans = pieceGrid[row+dy][col+dx].flipPieces(dx, dy, type, applyChange);
 
-        // if return number is negative, keep it below zero
         if(ans < 0) {
             return -1;
         }
 
-        // change the grid if applied
-        // or work as validation check only
-        if(apply_change) {
+        if(applyChange) {
             this.type = type;
         }
 
-        // return type is the number of pieces flipped (or able to be flipped)
-        // or negative number showing operation failed
         return ans + 1;
     }
 }

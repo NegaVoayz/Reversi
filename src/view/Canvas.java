@@ -21,24 +21,39 @@ public class Canvas {
         }
     }
 
-    // set pixel on canvas
-    // dirty if really changed
-    // return dirty since we don't care one pixel but the whole canvas
+    /**
+     * set pixel on canvas
+     * set dirty to true if really changed
+     * 
+     * @param x
+     * @param y
+     * @param pix
+     * @return dirty since we don't care one pixel but the whole canvas
+     */
     public boolean setPixel(int x, int y, Pixel pix) {
         dirty |= buffer[y][x].set(pix);
         return dirty;
     }
 
-    // force refresh by default
+    /**
+     * show the canvas, force refresh by default
+     * @return true when repainted
+     */
     public boolean paint() {
         return paint(false);
     }
-    // show the canvas, return true when repainted
-    // refuse to work if not forced and no change
-    public boolean paint(boolean force_refresh) {
-        if(!dirty && !force_refresh)
+    
+    /**
+     * show the canvas
+     * refuse to work if not forced and no change
+     * 
+     * @param forceRefresh force it to refresh
+     * @return true when repainted
+     */
+    public boolean paint(boolean forceRefresh) {
+        if(!dirty && !forceRefresh)
             return false;
-        clear_screen();
+        clearScreen();
         for(int i = 0; i < height; i++) {
             for(int j = 0; j < width; j++) {
                 System.out.print(buffer[i][j].get());
@@ -50,9 +65,11 @@ public class Canvas {
         return true;
     }
 
-    // canvas clear the screen
-    public static void clear_screen(){
-         try {
+    /**
+     * clear the screen
+     */
+    public static void clearScreen(){
+        try {
             new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
         } catch (InterruptedException | IOException e) {
             e.printStackTrace();

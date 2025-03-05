@@ -30,10 +30,16 @@
 * Code
 
   ```java
-  // recursively check whether a flip is possible
-  // apply change used to check.
-  private int flip(int dx, int dy, Type type, boolean apply_change) {
-      if(this.type == Type.None) {
+  /**
+   * recursively check/do a flip
+   * @param dx direction on column
+   * @param dy direction on row
+   * @param type piece type of the original piece
+   * @param apply_change flip the pieces or not
+   * @return the number of pieces (could be) flipped (negative means operation failed)
+       */
+  private int flipPieces(int dx, int dy, Piece.Type type, boolean apply_change) {
+      if(this.type == Piece.Type.NONE) {
           return -1; 
       }
       if(this.type == type) {
@@ -41,21 +47,16 @@
       }
   
       // try flip next
-      int ans = grid[y+dy][x+dx].flip(dx, dy, type, apply_change);
+      int ans = pieceGrid[row+dy][col+dx].flipPieces(dx, dy, type, apply_change);
   
-      // if return number is negative, keep it below zero
       if(ans < 0) {
           return -1;
       }
   
-      // change the grid if applied
-      // or work as validation check only
       if(apply_change) {
           this.type = type;
       }
   
-      // return type is the number of pieces flipped (or able to be flipped)
-      // or negative number showing operation failed
       return ans + 1;
   }
   ```
@@ -64,48 +65,61 @@
 
 * Design
 
-  Firstly, when player have no valid moves, he skip his turn.
-
-  And, if one player skipped and the other skipped too, there's no valid moves and game ends.
-
-  So this function use parameter `skipped` to store whether the current player skipped his turn.
-
   If found possible move, paint on the canvas and return `true` as succeed.
 
-  If no skip and no possible move, skip and recurse.
-
-  If skipped and no possible move, set `end` to `true` and return `false` as failed.
+  If no possible move, return `false` as failed.
 
 * Code
-
+  
   ```java
-  // get and show valid moves for current player
-  // automatically skip turns if no moves valid
-  // if both players have no valid moves, set game end
-  private boolean get_vaild_moves(boolean skipped) {
-      boolean movable = false;
-      Piece.Type type;
-      if(current_player == Player.White) {
-          type = Piece.Type.White;
-      } else {
-          type = Piece.Type.Black;
-      }
-      for(int i = 1; i <= height; i++) {
-          for(int j = 1; j <= width; j++) {
-              if(grid[i][j].is_valid(type)) {
-                  movable = true;
-                  canvas.setPixel(j, i, new Pixel('·'));
+  public class Board {
+      ...
+  	/**
+       * get and show valid moves for current player
+       * @return true when there are any moves valid
+       */
+      private boolean getValidMoves() {
+          boolean movable = false;
+          Piece.Type type;
+          type = getCurrentPlayerPieceType();
+  
+          for(int i = 1; i <= height; i++) {
+              for(int j = 1; j <= width; j++) {
+                  if(pieceGrid[i][j].isValid(type)) {
+                      movable = true;
+                      canvas.setPixel(j, i, new Pixel(Piece.VALID_MOVE));
+                  }
               }
           }
+  
+          return movable;
       }
-      if(movable) {
-          return true;
-      }
-      if(skipped) {
+      ...
+  }
+  ```
+  
+  ```java
+  public class Piece {
+      ...
+      /**
+       * Check whether it is a valid move to place piece here
+       * @param expected_type the expected type of piece
+       * @return true when valid
+       */
+      public boolean isValid(Piece.Type expected_type) {
+          if(this.type != Piece.Type.NONE) {
+              return false;
+          }
+          for(int i = 0; i < 8; i++) {
+              int dx = DIRECTIONS[i][0];
+              int dy = DIRECTIONS[i][1];
+              if(pieceGrid[row+dy][col+dx].flipPieces(dx, dy, expected_type, false)>0) {
+                  return true;
+              }
+          }
           return false;
       }
-      change_player();
-      return get_vaild_moves(true);
+      ...
   }
   ```
 

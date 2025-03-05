@@ -4,23 +4,33 @@ public class Pixel {
     // use string to contain multi-byte character 
     private String data;
 
-    // blank by default
+    /**
+     * blank by default
+     */
     public Pixel() {
         data = " ";
     }
 
-    // multi-byte character
-    public Pixel(String ch) {
-        data = ch;
+    /**
+     * @param character multi-byte character
+     */
+    public Pixel(String character) {
+        data = character;
     }
 
-    // normal character
-    public Pixel(char ch) {
-        data = ""+ch;
+    /**
+     * @param character normal one-byte character
+     */
+    public Pixel(char character) {
+        data = ""+character;
     }
 
-    // set data using another pixel to make things simple
-    // return true if data changed
+    /**
+     * set data using another pixel
+     * 
+     * @param pix
+     * @return true if data changed
+     */
     public boolean set(Pixel pix) {
         if(this.data == pix.data)
             return false;
@@ -28,7 +38,9 @@ public class Pixel {
         return true;
     }
 
-    // return data for paint
+    /**
+     * @return character to be paint
+     */
     public String get() {
         return data;
     }
