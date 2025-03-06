@@ -2,7 +2,7 @@ package main;
 
 import java.util.Scanner;
 
-import view.Canvas;
+import view.Screen;
 import model.Board;
 
 public class Reversi{
@@ -14,7 +14,7 @@ public class Reversi{
      * @return The name of the player.
      */
     private static String getName(Board.Player player, Scanner scanner) {
-        Canvas.clearScreen();
+        Screen.clear();
         if(player == Board.Player.WHITE) {
             System.out.println("[You Play White]");
         } else {
@@ -126,7 +126,9 @@ public class Reversi{
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        Board board = new Board(8, 8);
+        Screen screen = new Screen(22, Board.ULTIMATE_ANSWER);
+
+        Board board = new Board(8, 8, screen.getCanvas(0, 0));
 
         inputPlayerNames(scanner, board);
 

@@ -9,7 +9,9 @@ public class Board{
         NONE,
         BLACK,
     }
-    
+    // Answer to the Ultimate Question of Life, the Universe, and Everything
+    public static final int ULTIMATE_ANSWER = 42;
+
     private static final int MAX_BOARD_SIZE = 16;
     private static final int DEFAULT_BOARD_SIZE = 8;
 
@@ -22,7 +24,7 @@ public class Board{
     private String blackPlayerName;
     private boolean isGameOver;
 
-    public Board(int height, int width) {
+    public Board(int height, int width, Canvas canvas) {
         if(height < 0 || height > MAX_BOARD_SIZE ||
             width < 0 || width > MAX_BOARD_SIZE ) {
             throw new IllegalArgumentException("Invalid board size: too large or negative");
@@ -36,8 +38,8 @@ public class Board{
         this.height = height;
         this.width = width;
         this.currentPlayer = Player.BLACK;
-        pieceGrid = new Piece[height+2][width+2];
-        canvas = new Canvas(height+2, width+2);
+        this.pieceGrid = new Piece[height+2][width+2];
+        this.canvas = canvas;
         initializeCanvas();
         initializeGrid();
 
@@ -86,12 +88,12 @@ public class Board{
      * paint game window
      */
     public void paint() {
-        canvas.paint(true);
         if(isGameOver) {
             displayWinnerInfo(getWinner());
         } else {
             displayPlayerInfo();
         }
+        canvas.paint(true);
     }
 
     /**
@@ -114,14 +116,8 @@ public class Board{
      * show edge scales
      */
     private void initializeCanvas() {
-        for(int i = 1; i <= height && i <= 9; i++) {
-            canvas.setPixel(0, i, new Pixel((char)(48+i)));
-        }
-        for(int i = 10; i <= height; i++) {
-            canvas.setPixel(0, i, new Pixel((char)(87+i)));
-        }
-        for(int j = 1; j <= width; j++) {
-            canvas.setPixel(j, 0, new Pixel((char)(64+j)));
+        if(!canvas.resize(height + 5, ULTIMATE_ANSWER)) {
+            throw new IllegalArgumentException("Unable to draw board: Space occupied");
         }
     }
 
@@ -154,9 +150,19 @@ public class Board{
      * update pieces on canvas
      */
     private void updateBoard() {
+        canvas.clearCanvas();
+        for(int i = 1; i <= height && i <= 9; i++) {
+            canvas.setPixel(0, i, new Pixel((char)('0'+i)));
+        }
+        for(int i = 10; i <= height; i++) {
+            canvas.setPixel(0, i, new Pixel((char)('a'+i-10)));
+        }
+        for(int j = 1; j <= width; j++) {
+            canvas.setPixel(2*j-1, 0, new Pixel((char)('A'+j-1)));
+        }
         for(int i = 1; i <= height; i++) {
             for(int j = 1; j <= width; j++) {
-                canvas.setPixel(j, i, pieceGrid[i][j].getPixel());
+                canvas.setPixel(2*j-1, i, pieceGrid[i][j].getPixel());
             }
         }
     }
@@ -174,7 +180,7 @@ public class Board{
             for(int j = 1; j <= width; j++) {
                 if(pieceGrid[i][j].isValid(type)) {
                     movable = true;
-                    canvas.setPixel(j, i, new Pixel(Piece.VALID_MOVE));
+                    canvas.setPixel(2*j-1, i, new Pixel(Piece.VALID_MOVE));
                 }
             }
         }
@@ -186,25 +192,26 @@ public class Board{
      * show player info and the current player while playing
      */
     private void displayPlayerInfo() {
-        System.out.print("White Player: " + whitePlayerName + " ");
+        String buf;
+        buf = "Player[" + whitePlayerName + "] ";
         if(currentPlayer == Player.WHITE) {
-            System.out.print(Piece.WHITE_PIECE);
+            buf += Piece.WHITE_PIECE;
         }
-        System.out.println();
+        canvas.print(0, height+2, buf); 
 
-        System.out.print("Black Player: " + blackPlayerName + " ");
+        buf = "Player[" + blackPlayerName + "] ";
         if(currentPlayer == Player.BLACK) {
-            System.out.print(Piece.BLACK_PIECE);
+            buf += Piece.BLACK_PIECE;
         }
-        System.out.println();
+        canvas.print(0, height+3, buf); 
         
-        System.out.print("Current Player:");
+        buf = "Current Player: ";
         if(currentPlayer == Player.WHITE) {
-            System.out.print("White");
+            buf += "White";
         } else {
-            System.out.print("Black");
+            buf += "Black";
         }
-        System.out.println();
+        canvas.print(0, height+4, buf); 
     }
 
     /**
@@ -214,13 +221,16 @@ public class Board{
     private void displayWinnerInfo(Player type) {
         switch(type) {
             case Player.WHITE:
-                System.out.println("White Wins\nCongratulations! " + whitePlayerName);
+                canvas.print(0, height+2, "White Wins"); 
+                canvas.print(0, height+3, "Good game " + whitePlayerName); 
                 break;
             case Player.BLACK:
-                System.out.println("Black Wins\nCongratulations! " + blackPlayerName);
+                canvas.print(0, height+2, "Black Wins"); 
+                canvas.print(0, height+3, "Good game " + blackPlayerName); 
                 break;
             case Player.NONE:
-                System.out.println("Draw\nCool");
+                canvas.print(0, height+2, "Draw"); 
+                canvas.print(0, height+3, "Cool"); 
                 break;
         }
     }
