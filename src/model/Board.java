@@ -11,6 +11,8 @@ public class Board{
     }
     // Answer to the Ultimate Question of Life, the Universe, and Everything
     public static final int ULTIMATE_ANSWER = 42;
+    public static final int canvas_height = 13;
+    public static int canvas_width = ULTIMATE_ANSWER;
 
     private static final int MAX_BOARD_SIZE = 16;
     private static final int DEFAULT_BOARD_SIZE = 8;
@@ -54,9 +56,20 @@ public class Board{
         }
     }
 
-    public void setName(String whitePlayerName, String blackPlayerName) {
+    /**
+     * set player names
+     * keep names below 32 letters
+     * @param whitePlayerName
+     * @param blackPlayerName
+     * @return true if succeeded
+     */
+    public boolean setName(String whitePlayerName, String blackPlayerName) {
+        if(whitePlayerName.length() > 32 || blackPlayerName.length() > 32) {
+            return false;
+        }
         this.whitePlayerName = whitePlayerName;
         this.blackPlayerName = blackPlayerName;
+        return true;
     }
 
     public boolean isGameOver() {
@@ -116,7 +129,7 @@ public class Board{
      * show edge scales
      */
     private void initializeCanvas() {
-        if(!canvas.resize(height + 5, ULTIMATE_ANSWER)) {
+        if(!canvas.resize(height + 5, canvas_width)) {
             throw new IllegalArgumentException("Unable to draw board: Space occupied");
         }
     }
@@ -239,7 +252,11 @@ public class Board{
      * count pieces and return the winner
      * @return the winner
      */
-    private Player getWinner() {
+    private Player winner;
+    public  Player getWinner() {
+        if(winner != null) {
+            return winner;
+        }
         int whitePieceCount = 0;
         int blackPieceCount = 0;
         for(int i = 1; i <= height; i++) {
@@ -258,12 +275,15 @@ public class Board{
         }
 
         if(whitePieceCount > blackPieceCount ) {
+            winner = Player.WHITE;
             return Player.WHITE;
         }
         if(whitePieceCount == blackPieceCount ) {
+            winner = Player.NONE;
             return Player.NONE;// draw
         }
         if(whitePieceCount < blackPieceCount ) {
+            winner = Player.BLACK;
             return Player.BLACK;
         }
         // to comfort vs code

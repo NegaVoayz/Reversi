@@ -48,6 +48,23 @@ public class Screen {
     }
 
     /**
+     * print string on screen
+     * @param x
+     * @param y
+     * @param str
+     * @return number of characters printed
+     */
+    public int print(int x, int y, String str) {
+        int cnt = 0;
+        for(int i = 0; i < str.length(); i++) {
+            if(setPixel(x+i, y, new Pixel(str.charAt(i)))) {
+                cnt++;
+            }
+        }
+        return cnt;
+    }
+
+    /**
      * get a canvas to draw on
      * @param startX 
      * @param startY
@@ -154,5 +171,19 @@ public class Screen {
         } catch (InterruptedException | IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * clear the screen buffer
+     * @return true if not empty before
+     */
+    public boolean clearScreenBuffer(){
+        Pixel pix = new Pixel();
+        for(int y = rect.top; y < rect.bottom; y++) {
+            for(int x = rect.left; x < rect.right; x++) {
+                dirty |= setPixel(x, y, pix);
+            }
+        }
+        return dirty;
     }
 }

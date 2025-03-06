@@ -1,9 +1,11 @@
 package main;
 
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 import view.Screen;
 import model.Board;
+import model.Board.Player;
 
 public class Reversi{
     /**
@@ -28,25 +30,38 @@ public class Reversi{
         return "";
     }
 
+
+    static String whitePlayerName;
+    static String blackPlayerName;
     /**
      * Prompts the players to input their names and sets them on the board.
      *
      * @param scanner The scanner object to read input from the user.
      * @param board The board object where player names will be set.
      */
-    private static void inputPlayerNames(Scanner scanner, Board board) {
-        String whitePlayerName;
-        String blackPlayerName;
+    private static void inputPlayerNames(Scanner scanner, Board[] boards) {
 
-        whitePlayerName = getName(Board.Player.WHITE, scanner);
-        if(whitePlayerName == "") {
-            return;
+        while(true) {
+            whitePlayerName = getName(Board.Player.WHITE, scanner);
+            if(whitePlayerName == "") {
+                return;
+            }
+            if(whitePlayerName.length() <= 32) {
+                break;
+            }
         }
-        blackPlayerName = getName(Board.Player.BLACK, scanner);
-        if(blackPlayerName == "") {
-            return;
+        while(true) {
+            blackPlayerName = getName(Board.Player.BLACK, scanner);
+            if(blackPlayerName == "") {
+                return;
+            }
+            if(blackPlayerName.length() <= Board.canvas_width - 10) {
+                break;
+            }
         }
-        board.setName(whitePlayerName, blackPlayerName);
+        for(Board board : boards) {
+            board.setName(whitePlayerName, blackPlayerName);
+        }
     }
 
     /**
@@ -62,6 +77,19 @@ public class Reversi{
             return "wohohohoho";
         }
         return scanner.nextLine();
+    }
+
+    /**
+     * Converts a hex code to its corresponding integer value.
+     * @param code
+     * @return
+     */
+    private static int getIndex(char code) {
+        if(code > '9') {
+            return ((int)code|32)-'a'+10;
+        } else {
+            return (int)code-'0';
+        }
     }
 
     /**
@@ -95,23 +123,35 @@ public class Reversi{
      * @param board The board object where the piece will be placed.
      * @return True if the position is valid and the piece is placed successfully
      */
-    private static boolean inputPlacePosition(Scanner scanner, Board board) {
+    private static boolean inputPlacePosition(Scanner scanner, Board[] boards) {
+        int index;
         int col;
         int row;
         String input;
 
         input = getInput(scanner);
 
-        if(input.length() != 2) {
+        if(input.length() != 3) {
             System.out.println("oOps! invalid move");
             return false;
         }
     
-        col = getCol(input.charAt(1));
-        row = getRow(input.charAt(0));
+        index = getIndex(input.charAt(0));
+        col = getCol(input.charAt(2));
+        row = getRow(input.charAt(1));
+
+        if(index < 0 || index > boards.length) {
+            System.out.println("oOps! invalid board");
+            return false;
+        }
+
+        if(boards[index].isGameOver()) {
+            System.out.println("oOps! wrong board");
+            return false;
+        }
 
         // location validation check done in "placePiece" function
-        if(!board.placePiece(col,row)) {
+        if(!boards[index].placePiece(col,row)) {
             System.out.println("oOps! invalid move");
             return false;
         }
@@ -124,22 +164,70 @@ public class Reversi{
      * @param args Command line arguments.
      */
     public static void main(String[] args) {
+        Board.canvas_width = 23;
+        final int boardCount = 4;
+        final int boardCountRow = 2;
+
         Scanner scanner = new Scanner(System.in);
 
-        Screen screen = new Screen(22, Board.ULTIMATE_ANSWER);
+        Screen screen = new Screen(boardCount/boardCountRow*Board.canvas_height, boardCountRow*Board.canvas_width);
 
-        Board board = new Board(8, 8, screen.getCanvas(0, 0));
+        Board[] boards = new Board[boardCount];
+        
+        for(int i = 0; i < boardCount; i++) {
+            boards[i] = new Board(8, 8, screen.getCanvas(i%boardCountRow*Board.canvas_width, (i/boardCountRow) * (Board.canvas_height + 1)));
+        }
 
-        inputPlayerNames(scanner, board);
+        inputPlayerNames(scanner, boards);
 
-        board.paint();
-
-        while(!board.isGameOver()) {
-            if( !inputPlacePosition(scanner, board) ) {
-                continue;
-            }
+        for(Board board : boards) {
             board.paint();
         }
+
+        boolean allGameOver = false;
+        while(!allGameOver) {
+            if( !inputPlacePosition(scanner, boards) ) {
+                continue;
+            }
+
+            for(Board board : boards) {
+                board.paint();
+            }
+
+            allGameOver = true;
+            for(Board board : boards) {
+                if(!board.isGameOver()) {
+                    allGameOver = false;
+                }
+            }
+        }
+
+        System.out.println("Game Over!");
+        try {
+            TimeUnit.SECONDS.sleep(3);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        int cnt = 0;
+        for(Board board : boards) {
+            if(board.getWinner() == Board.Player.WHITE) {
+                cnt++;
+            }
+        }
+        screen.clearScreenBuffer();
+        if(cnt > boardCount/2) {
+            screen.print(0, 0, "White Wins"); 
+            screen.print(0, 1, "Good game " + whitePlayerName); 
+        } else if(cnt < boardCount/2 || boardCount%2 == 1) {
+            screen.print(0, 0, "Black Wins"); 
+            screen.print(0, 1, "Good game " + blackPlayerName); 
+        } else {
+            screen.print(0, 0, "Draw"); 
+            screen.print(0, 1, "Cool"); 
+        }
+        screen.paint();
+
         scanner.close();
         return;
     }
