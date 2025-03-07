@@ -106,8 +106,9 @@ public class Board{
         } else {
             displayPlayerInfo();
         }
-        canvas.paint(true);
+        canvas.paint(false);
     }
+
 
     /**
      * allocate pieceGrid and set the start pieces
@@ -131,6 +132,15 @@ public class Board{
     private void initializeCanvas() {
         if(!canvas.resize(height + 5, canvas_width)) {
             throw new IllegalArgumentException("Unable to draw board: Space occupied");
+        }
+        for(int i = 1; i <= height && i <= 9; i++) {
+            canvas.setPixel(0, i, new Pixel((char)('0'+i)));
+        }
+        for(int i = 10; i <= height; i++) {
+            canvas.setPixel(0, i, new Pixel((char)('a'+i-10)));
+        }
+        for(int j = 1; j <= width; j++) {
+            canvas.setPixel(2*j-1, 0, new Pixel((char)('A'+j-1)));
         }
     }
 
@@ -163,16 +173,6 @@ public class Board{
      * update pieces on canvas
      */
     private void updateBoard() {
-        canvas.clearCanvas();
-        for(int i = 1; i <= height && i <= 9; i++) {
-            canvas.setPixel(0, i, new Pixel((char)('0'+i)));
-        }
-        for(int i = 10; i <= height; i++) {
-            canvas.setPixel(0, i, new Pixel((char)('a'+i-10)));
-        }
-        for(int j = 1; j <= width; j++) {
-            canvas.setPixel(2*j-1, 0, new Pixel((char)('A'+j-1)));
-        }
         for(int i = 1; i <= height; i++) {
             for(int j = 1; j <= width; j++) {
                 canvas.setPixel(2*j-1, i, pieceGrid[i][j].getPixel());
@@ -210,13 +210,13 @@ public class Board{
         if(currentPlayer == Player.WHITE) {
             buf += Piece.WHITE_PIECE;
         }
-        canvas.print(0, height+2, buf); 
+        canvas.println(height+2, buf); 
 
         buf = "Player[" + blackPlayerName + "] ";
         if(currentPlayer == Player.BLACK) {
             buf += Piece.BLACK_PIECE;
         }
-        canvas.print(0, height+3, buf); 
+        canvas.println(height+3, buf); 
         
         buf = "Current Player: ";
         if(currentPlayer == Player.WHITE) {
@@ -224,7 +224,7 @@ public class Board{
         } else {
             buf += "Black";
         }
-        canvas.print(0, height+4, buf); 
+        canvas.println(height+4, buf); 
     }
 
     /**
@@ -234,18 +234,19 @@ public class Board{
     private void displayWinnerInfo(Player type) {
         switch(type) {
             case Player.WHITE:
-                canvas.print(0, height+2, "White Wins"); 
-                canvas.print(0, height+3, "Good game " + whitePlayerName); 
+                canvas.println(height+2, "White Wins"); 
+                canvas.println(height+3, "Good game " + whitePlayerName); 
                 break;
             case Player.BLACK:
-                canvas.print(0, height+2, "Black Wins"); 
-                canvas.print(0, height+3, "Good game " + blackPlayerName); 
+                canvas.println(height+2, "Black Wins"); 
+                canvas.println(height+3, "Good game " + blackPlayerName); 
                 break;
             case Player.NONE:
-                canvas.print(0, height+2, "Draw"); 
-                canvas.print(0, height+3, "Cool"); 
+                canvas.println(height+2, "Draw"); 
+                canvas.println(height+3, "Cool"); 
                 break;
         }
+        canvas.println(height+4, "");
     }
 
     /**

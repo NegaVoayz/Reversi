@@ -3,14 +3,14 @@ package view;
 public class Canvas {
     private Screen screen;
     private Rect rect;
-    private boolean dirty;
+    private int dirty;
 
     public Canvas(int startX, int startY, Screen screen) {
         this(startX, startY, 0, 0, screen);
     }
 
     public Canvas(int startX, int startY, int height, int width, Screen screen) {
-        dirty = false;
+        dirty = 0;
         rect = new Rect(startY, startY + height, startX, startX + width);
         screen.allocateCanvas(rect);
         this.screen = screen;
@@ -45,12 +45,12 @@ public class Canvas {
      * @return dirty since we don't care one pixel but the whole canvas
      * @throws IndexOutOfBoundsException when position out of bound
      */
-    public boolean setPixel(int x, int y, Pixel pix) {
+    public int setPixel(int x, int y, Pixel pix) {
         if( x < 0 || x >= rect.right - rect.left ||
             y < 0 || y >= rect.bottom - rect.top) {
             throw new IndexOutOfBoundsException("Canvas: position out of bound");
         }
-        dirty |= screen.setPixel(rect.left + x, rect.top + y, pix);
+        dirty += screen.setPixel(rect.left + x, rect.top + y, pix);
         return dirty;
     }
 
@@ -64,9 +64,26 @@ public class Canvas {
     public int print(int x, int y, String str) {
         int cnt = 0;
         for(int i = 0; i < str.length(); i++) {
-            if(setPixel(x+i, y, new Pixel(str.charAt(i)))) {
-                cnt++;
-            }
+            cnt+=setPixel(x+i, y, new Pixel(str.charAt(i)));
+        }
+        return cnt;
+    }
+
+    /**
+     * print string on canvas, rewrite the whole line
+     * @param y
+     * @param str
+     * @return number of characters changed
+     */
+    public int println(int y, String str) {
+        int cnt = 0;
+        int i;
+        for(i = 0; i < str.length(); i++) {
+            cnt+=setPixel(i, y, new Pixel(str.charAt(i)));
+        }
+        Pixel temp = new Pixel();
+        for(; i < rect.right - rect.left; i++ ) {
+            cnt+=setPixel(i, y, temp);
         }
         return cnt;
     }
@@ -77,7 +94,7 @@ public class Canvas {
      * @return true when repainted
      */
     public boolean forcePaint() {
-        return paint(false);
+        return paint(true);
     }
     
     /**
@@ -88,10 +105,10 @@ public class Canvas {
      * @return true when repainted
      */
     public boolean paint(boolean forceRefresh) {
-        if(!dirty && !forceRefresh)
+        if(dirty == 0 && !forceRefresh)
             return false;
         screen.paint(forceRefresh);
-        dirty = false;
+        dirty = 0;
         return true;
     }
 

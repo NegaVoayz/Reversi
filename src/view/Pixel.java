@@ -3,12 +3,14 @@ package view;
 public class Pixel {
     // use string to contain multi-byte character 
     private String data;
+    private String lastPainted;
 
     /**
      * blank by default
      */
     public Pixel() {
         data = " ";
+        lastPainted = "";
     }
 
     /**
@@ -16,6 +18,7 @@ public class Pixel {
      */
     public Pixel(String character) {
         data = character;
+        lastPainted = "";
     }
 
     /**
@@ -23,19 +26,27 @@ public class Pixel {
      */
     public Pixel(char character) {
         data = ""+character;
+        lastPainted = "";
     }
 
     /**
      * set data using another pixel
      * 
      * @param pix
-     * @return true if data changed
+     * @return 1 if data changed, 0 if not changed, -1 if changed back
      */
-    public boolean set(Pixel pix) {
-        if(this.data == pix.data)
-            return false;
-        this.data = pix.data;
-        return true;
+    public int set(Pixel pix) {
+        if(this.lastPainted.equals(pix.data)) {
+            if(this.data.equals(pix.data)) {
+                return 0;
+            } else {
+                this.data = pix.data;
+                return -1;
+            }
+        } else {
+            this.data = pix.data;
+            return 1;
+        }
     }
 
     /**
@@ -43,5 +54,13 @@ public class Pixel {
      */
     public String get() {
         return data;
+    }
+
+    /**
+     * flush buffer
+     */
+    public void flush() {
+        lastPainted = data;
+        return;
     }
 }

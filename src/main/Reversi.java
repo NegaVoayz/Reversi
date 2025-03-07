@@ -5,7 +5,6 @@ import java.util.concurrent.TimeUnit;
 
 import view.Screen;
 import model.Board;
-import model.Board.Player;
 
 public class Reversi{
     /**
@@ -165,12 +164,12 @@ public class Reversi{
      */
     public static void main(String[] args) {
         Board.canvas_width = 23;
-        final int boardCount = 4;
+        final int boardCount = 3;
         final int boardCountRow = 2;
 
         Scanner scanner = new Scanner(System.in);
 
-        Screen screen = new Screen(boardCount/boardCountRow*Board.canvas_height, boardCountRow*Board.canvas_width);
+        Screen screen = new Screen((boardCount+boardCountRow)/boardCountRow*(Board.canvas_height+1)-1, boardCountRow*Board.canvas_width);
 
         Board[] boards = new Board[boardCount];
         
@@ -217,14 +216,14 @@ public class Reversi{
         }
         screen.clearScreenBuffer();
         if(cnt > boardCount/2) {
-            screen.print(0, 0, "White Wins"); 
-            screen.print(0, 1, "Good game " + whitePlayerName); 
+            screen.println(0, "White Wins"); 
+            screen.println(1, "Good game " + whitePlayerName); 
         } else if(cnt < boardCount/2 || boardCount%2 == 1) {
-            screen.print(0, 0, "Black Wins"); 
-            screen.print(0, 1, "Good game " + blackPlayerName); 
+            screen.println(0, "Black Wins"); 
+            screen.println(1, "Good game " + blackPlayerName); 
         } else {
-            screen.print(0, 0, "Draw"); 
-            screen.print(0, 1, "Cool"); 
+            screen.println(0, "Draw"); 
+            screen.println(1, "Cool"); 
         }
         screen.paint();
 

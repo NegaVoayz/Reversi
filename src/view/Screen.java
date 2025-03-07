@@ -6,10 +6,10 @@ public class Screen {
     private Pixel buffer[][];
     private boolean occupied[][];
     private Rect rect;
-    private boolean dirty;
+    private int dirty;
 
     public Screen(int height, int width) {
-        dirty = false;
+        dirty = 0;
         this.rect = new Rect(0, height, 0, width);
         buffer = new Pixel[rect.bottom][rect.right];
         occupied = new boolean[rect.bottom][rect.right];
@@ -31,8 +31,8 @@ public class Screen {
      * @param pix
      * @return dirty since we don't care one pixel but the whole screen
      */
-    public boolean setPixel(int x, int y, Pixel pix) {
-        dirty |= buffer[y][x].set(pix);
+    public int setPixel(int x, int y, Pixel pix) {
+        dirty += buffer[y][x].set(pix);
         return dirty;
     }
     /**
@@ -43,7 +43,7 @@ public class Screen {
      * @param pix
      * @return dirty since we don't care one pixel but the whole screen
      */
-    public boolean setPixel(Point position, Pixel pix) {
+    public int setPixel(Point position, Pixel pix) {
         return setPixel(position.x, position.y, pix);
     }
 
@@ -57,9 +57,26 @@ public class Screen {
     public int print(int x, int y, String str) {
         int cnt = 0;
         for(int i = 0; i < str.length(); i++) {
-            if(setPixel(x+i, y, new Pixel(str.charAt(i)))) {
-                cnt++;
-            }
+            cnt+=setPixel(x+i, y, new Pixel(str.charAt(i)));
+        }
+        return cnt;
+    }
+
+    /**
+     * print string on canvas, rewrite the whole line
+     * @param y
+     * @param str
+     * @return number of characters changed
+     */
+    public int println(int y, String str) {
+        int cnt = 0;
+        int i;
+        for(i = 0; i < str.length(); i++) {
+            cnt+=setPixel(i, y, new Pixel(str.charAt(i)));
+        }
+        Pixel temp = new Pixel();
+        for(; i < rect.right; i++ ) {
+            cnt+=setPixel(i, y, temp);
         }
         return cnt;
     }
@@ -149,16 +166,17 @@ public class Screen {
      * @return true when repainted
      */
     public boolean paint(boolean forceRefresh) {
-        if(!dirty && !forceRefresh)
+        if(dirty == 0 && !forceRefresh)
             return false;
         clear();
         for(int i = rect.top; i < rect.bottom; i++) {
             for(int j = rect.left; j < rect.right; j++) {
                 System.out.print(buffer[i][j].get());
+                buffer[i][j].flush();
             }
             System.out.print('\n');
         }
-        dirty = false;
+        dirty = 0;
         return true;
     }
 
@@ -177,11 +195,11 @@ public class Screen {
      * clear the screen buffer
      * @return true if not empty before
      */
-    public boolean clearScreenBuffer(){
+    public int clearScreenBuffer(){
         Pixel pix = new Pixel();
         for(int y = rect.top; y < rect.bottom; y++) {
             for(int x = rect.left; x < rect.right; x++) {
-                dirty |= setPixel(x, y, pix);
+                dirty += setPixel(x, y, pix);
             }
         }
         return dirty;
