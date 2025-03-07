@@ -136,35 +136,31 @@
 
 - **Key Functions**:
 
-1. **Player Name Input:**
-   - `getName(Board.Player player, Scanner scanner)`: Prompts the player to input their name based on their assigned color (`WHITE` or `BLACK`). Returns the player's name.
-   - `inputPlayerNames(Scanner scanner, Board[] boards)`: Prompts both players to input their names and sets the names on all game boards.
+  1. **Player Name Input:**
+     - `getName(Board.Player player, Scanner scanner)`: Prompts the player to input their name based on their assigned color (`WHITE` or `BLACK`). Returns the player's name.
+     - `inputPlayerNames(Scanner scanner, Board[] boards)`: Prompts both players to input their names and sets the names on all game boards.
 
-2. **Move Input and Validation:**
-   - `getInput(Scanner scanner)`: Retrieves the player's move input from the console. Returns the input as a string.
-   - `getIndex(char code)`: Converts a hexadecimal character to its corresponding integer value.
-   - `getCol(char code)`: Converts a column character (e.g., `A`, `B`) to its corresponding integer value.
-   - `getRow(char code)`: Converts a row character (e.g., `1`, `2`, `a`, `b`) to its corresponding integer value.
-   - `inputPlacePosition(Scanner scanner, Board[] boards)`: Validates the player's move input and places the piece on the specified board if the move is valid. Returns `true` if the move is successful.
+  2. **Move Input and Validation:**
+     - `getInput(Scanner scanner)`: Retrieves the player's move input from the console. Returns the input as a string.
+     - `getIndex(char code)`: Converts a hexadecimal character to its corresponding integer value.
+     - `getCol(char code)`: Converts a column character (e.g., `A`, `B`) to its corresponding integer value.
+     - `getRow(char code)`: Converts a row character (e.g., `1`, `2`, `a`, `b`) to its corresponding integer value.
+     - `inputPlacePosition(Scanner scanner, Board[] boards)`: Validates the player's move input and places the piece on the specified board if the move is valid. Returns `true` if the move is successful.
+  3. **Game Flow:**
+     - `main(String[] args)`: The main method that runs the Reversi game. It initializes the game boards, prompts for player names, processes player moves, and determines the winner when the game ends.
+  4. **Game Initialization:**
 
-3. **Game Flow:**
-   - `main(String[] args)`: The main method that runs the Reversi game. It initializes the game boards, prompts for player names, processes player moves, and determines the winner when the game ends.
+     - Initializes the game with a specified number of boards and canvas dimensions.
+     - Creates a `Screen` object to display the game boards.
+     - Initializes an array of `Board` objects for the game.
+  5. **Game Loop:**
+     - Continuously processes player moves until all boards are in a game-over state.
+     - Updates and displays the game boards after each move.
+  6. **Winner Determination:**
+     - Counts the number of boards won by each player.
+     - Displays the overall winner or a draw result on the screen.
 
-4. **Game Initialization:**
-   
-   - Initializes the game with a specified number of boards and canvas dimensions.
-   - Creates a `Screen` object to display the game boards.
-   - Initializes an array of `Board` objects for the game.
-   
-5. **Game Loop:**
-   - Continuously processes player moves until all boards are in a game-over state.
-   - Updates and displays the game boards after each move.
-
-6. **Winner Determination:**
-   - Counts the number of boards won by each player.
-   - Displays the overall winner or a draw result on the screen.
-   
-7. **Summary**:
+- **Summary**:
 
    The `Reversi` class is the main driver for a Reversi game. It handles player input, manages multiple game boards, and controls the game flow. It ensures that the game is played according to the rules and provides a visual representation of the game state. This class is essential for running the game and determining the winner.
 
@@ -317,26 +313,25 @@
 * **Key Functions**:
 
   1. **Constructors:**
-
      - `Pixel()`: Initializes a pixel with a default blank character (`" "`).
      - `Pixel(String character)`: Initializes a pixel with a multi-byte character (e.g., Unicode characters).
      - `Pixel(char character)`: Initializes a pixel with a single-byte character (e.g., ASCII characters).
-
+     
   2. **Pixel Data Management:**
-
+  
      - `set(Pixel pix)`:
      - Sets the pixel's character data using another `Pixel` object. Returns:
-
+  
        - `1` if the data changed.
        - `0` if the data remained the same.
        - `-1` if the data changed back to a previously painted value.
-
+  
      - `get()`: Returns the current character data of the pixel.
-
+  
   3. **Buffer Management:**
-
+  
      - `flush()`: Updates the `lastPainted` buffer to the current character data. This is used to track the last displayed state of the pixel.
-
+  
 * **Summary**:
 
   The `Pixel` class is a simple yet essential component for managing individual pixels on a screen or canvas. It supports both single-byte and multi-byte characters and provides methods to set, retrieve, and track changes to pixel data. This class is particularly useful for applications that require dynamic rendering of text or graphics.
