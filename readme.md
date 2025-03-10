@@ -1,4 +1,4 @@
-# Reversi Project 2.0.1
+# Reversi Project 2.1.2
 
 ## Class & Function Document
 
