@@ -1,8 +1,8 @@
 package view;
 
 public class Canvas {
-    private Screen screen;
-    private Rect rect;
+    private final Screen screen;
+    private final Rect rect;
     private int dirty;
 
     public Canvas(int startX, int startY, Screen screen) {
@@ -19,8 +19,8 @@ public class Canvas {
     /**
      * resize the canvas
      * 
-     * @param height
-     * @param width
+     * @param height new height of the canvas
+     * @param width new width of the canvas
      * @return true if succeeded
      */
     public boolean resize(int height, int width) {
@@ -39,9 +39,9 @@ public class Canvas {
      * set pixel on canvas
      * set dirty to true if really changed
      * 
-     * @param x
-     * @param y
-     * @param pix
+     * @param x the x-axis position
+     * @param y the y-axis position
+     * @param pix the pixel 'color'
      * @return dirty since we don't care one pixel but the whole canvas
      * @throws IndexOutOfBoundsException when position out of bound
      */
@@ -56,9 +56,9 @@ public class Canvas {
 
     /**
      * print string on canvas
-     * @param x
-     * @param y
-     * @param str
+     * @param x the starting x-position
+     * @param y the starting y-position
+     * @param str the string to be print
      * @return number of characters printed
      */
     public int print(int x, int y, String str) {
@@ -71,8 +71,8 @@ public class Canvas {
 
     /**
      * print string on canvas, rewrite the whole line
-     * @param y
-     * @param str
+     * @param y the starting line position
+     * @param str the string to be print
      * @return number of characters changed
      */
     public int println(int y, String str) {

@@ -36,7 +36,7 @@ public class Reversi{
      * Prompts the players to input their names and sets them on the board.
      *
      * @param scanner The scanner object to read input from the user.
-     * @param board The board object where player names will be set.
+     * @param boards The board object where player names will be set.
      */
     private static void inputPlayerNames(Scanner scanner, Board[] boards) {
 
@@ -80,8 +80,8 @@ public class Reversi{
 
     /**
      * Converts a hex code to its corresponding integer value.
-     * @param code
-     * @return
+     * @param code The character code representing the board No.
+     * @return The integer value of board No.
      */
     private static int getIndex(char code) {
         if(code > '9') {
@@ -119,7 +119,7 @@ public class Reversi{
      * Prompts the player to input a position to place their piece and validates the input.
      *
      * @param scanner The scanner object to read input from the user.
-     * @param board The board object where the piece will be placed.
+     * @param boards The board object where the piece will be placed.
      * @return True if the position is valid and the piece is placed successfully
      */
     private static boolean inputPlacePosition(Scanner scanner, Board[] boards) {
@@ -204,8 +204,7 @@ public class Reversi{
         System.out.println("Game Over!");
         try {
             TimeUnit.SECONDS.sleep(3);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (InterruptedException _) {
         }
 
         int cnt = 0;

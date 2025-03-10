@@ -3,7 +3,7 @@ package model;
 import view.Pixel;
 
 public class Piece {
-    enum Type{
+    public enum Type{
         WHITE,
         NONE,
         BLACK,
@@ -13,19 +13,19 @@ public class Piece {
     public final static char WHITE_PIECE = '○';
     public final static char BLACK_PIECE = '●';
     public final static char VALID_MOVE = '·';
-    public final static int DIRECTIONS[][] = {
+    public final static int[][] DIRECTIONS = {
         {1,1},  {1,0},  {1,-1},
         {0,1},          {0,-1},
         {-1,1}, {-1,0}, {-1,-1}
     };
 
-    //to gain access to neibours
-    private Piece[][] pieceGrid;
+    //to gain access to neighbours
+    private final Piece[][] pieceGrid;
     private Piece.Type type;
-    private int col;
-    private int row;
+    private final int col;
+    private final int row;
 
-    public Piece(int col, int row, Piece[][] pieceGrid) {
+    protected Piece(int col, int row, Piece[][] pieceGrid) {
         this.type = Piece.Type.NONE;
         this.col = col;
         this.row = row;
@@ -37,11 +37,11 @@ public class Piece {
      * designed for pieceGrid initialization
      * @param type Piece.type
      */
-    public void setType(Piece.Type type) {
+    protected void setType(Piece.Type type) {
         this.type = type;
     }
 
-    public Piece.Type getType() {
+    protected Piece.Type getType() {
         return this.type;
     }
 
@@ -49,15 +49,12 @@ public class Piece {
      * Get the pixel form of this piece
      * @return Pixel
      */
-    public Pixel getPixel() {
-        switch (this.type) {
-            case Piece.Type.WHITE:
-                return new Pixel(WHITE_PIECE);
-            case Piece.Type.BLACK:
-                return new Pixel(BLACK_PIECE);
-            default:
-                return new Pixel(NONE_PIECE);
-        }
+    protected Pixel getPixel() {
+        return switch (this.type) {
+            case Type.WHITE -> new Pixel(WHITE_PIECE);
+            case Type.BLACK -> new Pixel(BLACK_PIECE);
+            default -> new Pixel(NONE_PIECE);
+        };
     }
 
     /**
@@ -65,7 +62,7 @@ public class Piece {
      * @param expected_type the expected type of piece
      * @return true when valid
      */
-    public boolean isValid(Piece.Type expected_type) {
+    protected boolean isValid(Piece.Type expected_type) {
         if(this.type != Piece.Type.NONE) {
             return false;
         }
@@ -84,7 +81,7 @@ public class Piece {
      * @param type the type of piece you want to place here
      * @return the number of pieces you've flipped
      */
-    public int placePiece(Piece.Type type) {
+    protected int placePiece(Piece.Type type) {
         this.type = type;
         int count = 0;
         for(int i = 0; i < 8; i++) {

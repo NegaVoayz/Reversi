@@ -17,14 +17,15 @@ public class Board{
     private static final int MAX_BOARD_SIZE = 16;
     private static final int DEFAULT_BOARD_SIZE = 8;
 
-    private Piece pieceGrid[][];
-    private Canvas canvas;
-    private int height;
-    private int width;
+    private final Piece[][] pieceGrid;
+    private final Canvas canvas;
+    private final int height;
+    private final int width;
     private Player currentPlayer;
     private String whitePlayerName;
     private String blackPlayerName;
     private boolean isGameOver;
+    private Player winner;
 
     public Board(int height, int width, Canvas canvas) {
         if(height < 0 || height > MAX_BOARD_SIZE ||
@@ -59,8 +60,8 @@ public class Board{
     /**
      * set player names
      * keep names below 32 letters
-     * @param whitePlayerName
-     * @param blackPlayerName
+     * @param whitePlayerName the name of whom plays white
+     * @param blackPlayerName the name of whom plays black
      * @return true if succeeded
      */
     public boolean setName(String whitePlayerName, String blackPlayerName) {
@@ -80,6 +81,7 @@ public class Board{
      * try place piece at the position given
      * @param col column position
      * @param row row position
+     * @return true if succeeded
      */
     public boolean placePiece(int col, int row) {
         if( col <= 0 || col > width ||
@@ -90,10 +92,11 @@ public class Board{
         pieceGrid[row][col].placePiece(getCurrentPlayerPieceType());
         switchPlayer();
         updateBoard();
-        if(!getValidMoves()) {
-            switchPlayer();
-            this.isGameOver = !getValidMoves();
+        if(getValidMoves()) {
+            return true;
         }
+        switchPlayer();
+        this.isGameOver = !getValidMoves();
         return true;
     }
 
@@ -253,7 +256,6 @@ public class Board{
      * count pieces and return the winner
      * @return the winner
      */
-    private Player winner;
     public  Player getWinner() {
         if(winner != null) {
             return winner;
@@ -279,15 +281,12 @@ public class Board{
             winner = Player.WHITE;
             return Player.WHITE;
         }
-        if(whitePieceCount == blackPieceCount ) {
-            winner = Player.NONE;
-            return Player.NONE;// draw
-        }
         if(whitePieceCount < blackPieceCount ) {
             winner = Player.BLACK;
             return Player.BLACK;
         }
-        // to comfort vs code
-        throw new IllegalStateException("How the hell do you come here?");
+        winner = Player.NONE;
+        return Player.NONE;// draw
+        // goodbye, VS Code!
     }
 }

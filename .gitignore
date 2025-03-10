@@ -1,6 +1,9 @@
 # Compiled class file
 *.class
 
+# Compiled executable
+*.exe
+
 # Log file
 *.log
 
@@ -25,4 +28,7 @@ replay_pid*
 
 # vscode
 /.vscode/
-*.exe
+
+# idea
+/.idea/
+*.iml

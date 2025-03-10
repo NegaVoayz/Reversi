@@ -1,4 +1,4 @@
-# Reversi Project 2.1.2
+# Reversi Project 2.1.3
 
 ## Class & Function Document
 
@@ -122,6 +122,26 @@
       ...
   }
   ```
+
+### Update Record
+
+#### V2.0.1
+
+Rewrite the game in java.
+
+The C version is not available since I don't want to publish that.
+
+#### V2.1.1
+
+Add `Screen` class to manage the whole window paint process. Preparing  for the coming version featuring multiple games shown  at the same time.
+
+#### V2.1.2
+
+Add multi-board feature, fixed occupation error and other bugs.
+
+#### V2.1.3
+
+Fix some spelling mistakes. Add more comments.
 
 ### Source Code
 

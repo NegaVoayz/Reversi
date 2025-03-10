@@ -3,9 +3,9 @@ package view;
 import java.io.IOException;
 
 public class Screen {
-    private Pixel buffer[][];
-    private boolean occupied[][];
-    private Rect rect;
+    private final Pixel[][] buffer;
+    private final boolean[][] occupied;
+    private final Rect rect;
     private int dirty;
 
     public Screen(int height, int width) {
@@ -25,10 +25,10 @@ public class Screen {
     /**
      * set pixel on screen
      * set dirty to true if really changed
-     * 
-     * @param x
-     * @param y
-     * @param pix
+     *
+     * @param x the x-axis position
+     * @param y the y-axis position
+     * @param pix the pixel 'color'
      * @return dirty since we don't care one pixel but the whole screen
      */
     public int setPixel(int x, int y, Pixel pix) {
@@ -39,8 +39,8 @@ public class Screen {
      * set pixel on screen
      * set dirty to true if really changed
      * 
-     * @param position
-     * @param pix
+     * @param position pixel position
+     * @param pix the pixel 'color'
      * @return dirty since we don't care one pixel but the whole screen
      */
     public int setPixel(Point position, Pixel pix) {
@@ -49,9 +49,9 @@ public class Screen {
 
     /**
      * print string on screen
-     * @param x
-     * @param y
-     * @param str
+     * @param x the starting x-position
+     * @param y the starting y-position
+     * @param str the string to be print
      * @return number of characters printed
      */
     public int print(int x, int y, String str) {
@@ -64,8 +64,8 @@ public class Screen {
 
     /**
      * print string on canvas, rewrite the whole line
-     * @param y
-     * @param str
+     * @param y the starting line position
+     * @param str the string to be print
      * @return number of characters changed
      */
     public int println(int y, String str) {
@@ -83,8 +83,8 @@ public class Screen {
 
     /**
      * get a canvas to draw on
-     * @param startX 
-     * @param startY
+     * @param startX start y-position of canvas, the left-up corner.
+     * @param startY start x-position of canvas, the left-up corner.
      * @return Canvas
      */
     public Canvas getCanvas(int startX, int startY) {
@@ -93,7 +93,7 @@ public class Screen {
 
     /**
      * get a canvas to draw on
-     * @param startPosition
+     * @param startPosition the left-up corner of the canvas.
      * @return Canvas
      */
     public Canvas getCanvas(Point startPosition) {
@@ -101,12 +101,12 @@ public class Screen {
     }
 
     /**
-     * try allocate canvas
+     * try to allocate canvas
      * overlap is not allowed
-     * @param expectedRect
-     * @return
+     * @param expectedRect the expected rect of canvas.
+     * @return true if succeeded
      */
-    public boolean allocateCanvas(Rect expectedRect) {
+    protected boolean allocateCanvas(Rect expectedRect) {
 
         if( expectedRect.left < rect.left ||
             expectedRect.right > rect.right ||
@@ -136,10 +136,10 @@ public class Screen {
     /**
      * free canvas area
      * 
-     * @param previousRect
-     * @return
+     * @param previousRect the previous rect of an canvas
+     * @return true if succeeded
      */
-    public boolean freeCanvas(Rect previousRect) {
+    protected boolean freeCanvas(Rect previousRect) {
 
         for(int i = previousRect.top; i < previousRect.bottom; i++) {
             for(int j = previousRect.left; j < previousRect.right; j++) {
@@ -186,14 +186,13 @@ public class Screen {
     public static void clear(){
         try {
             new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-        } catch (InterruptedException | IOException e) {
-            e.printStackTrace();
+        } catch (InterruptedException | IOException _) {
         }
     }
 
     /**
      * clear the screen buffer
-     * @return true if not empty before
+     * @return 0 if empty before
      */
     public int clearScreenBuffer(){
         Pixel pix = new Pixel();

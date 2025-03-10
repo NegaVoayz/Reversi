@@ -1,7 +1,7 @@
 package view;
 
 public class Pixel {
-    // use string to contain multi-byte character 
+    // use string to contain multibyte character
     private String data;
     private String lastPainted;
 
@@ -14,7 +14,7 @@ public class Pixel {
     }
 
     /**
-     * @param character multi-byte character
+     * @param character multibyte character
      */
     public Pixel(String character) {
         data = character;
@@ -32,7 +32,7 @@ public class Pixel {
     /**
      * set data using another pixel
      * 
-     * @param pix
+     * @param pix the pixel 'color'
      * @return 1 if data changed, 0 if not changed, -1 if changed back
      */
     public int set(Pixel pix) {
