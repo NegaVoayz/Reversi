@@ -5,12 +5,7 @@ import model.PieceImplReversi;
 import model.Point;
 import model.enums.Player;
 
-public class RuleImplReversi implements Rule {
-    private final static Point[] DIRECTIONS = {
-            new Point(1,1),  new Point(1,0),  new Point(1,-1),
-            new Point(0,1),                         new Point(0,-1),
-            new Point(-1,1), new Point(-1,0), new Point(-1,-1)
-    };
+public class RuleImplLandfill implements Rule {
 
     /**
      * allocate pieceGrid and set the start pieces
@@ -42,10 +37,7 @@ public class RuleImplReversi implements Rule {
         if( ! (pieceGrid[point.y][point.x] instanceof PieceImplReversi pieceImplReversi) ) {
             throw new IllegalArgumentException("Invalid Piece implementation");
         }
-        if(pieceImplReversi.getPlayer() != Player.NONE) {
-            return false;
-        }
-        return flipPieces(point, player, pieceGrid, false)!=0;
+        return pieceImplReversi.getPlayer() == Player.NONE;
     }
 
     @Override
@@ -68,7 +60,6 @@ public class RuleImplReversi implements Rule {
             return false;
         }
         pieceGrid[point.y][point.x].setPlayer(player);
-        flipPieces(point, player, pieceGrid, true);
         return true;
     }
 
@@ -77,7 +68,7 @@ public class RuleImplReversi implements Rule {
         Point boardPoint = new Point(0, 0);
         for(boardPoint.y = 1; boardPoint.y < pieceGrid.length-1; boardPoint.y++) {
             for(boardPoint.x = 1; boardPoint.x < pieceGrid[0].length-1; boardPoint.x++) {
-                if( placePieceValidationCheck(boardPoint, currentPlayer, pieceGrid) ) {
+                if( pieceGrid[boardPoint.y][boardPoint.x].getPlayer() == Player.NONE ) {
                     return false;
                 }
             }
@@ -108,41 +99,5 @@ public class RuleImplReversi implements Rule {
             return Player.BLACK;
         }
         return Player.NONE;
-    }
-
-    /**
-     * recursively check/do a flip
-     * @param applyChange flip the pieces or not
-     * @return the number of pieces (could be) flipped (negative means operation failed)
-     */
-    private int flipPieces(Point point, Player player, Piece[][] pieceGrid, boolean applyChange) {
-        Point temp = new Point(0,0);
-        int flipCount = 0;
-        Player rival = switch (player) {
-            case WHITE -> Player.BLACK;
-            case BLACK -> Player.WHITE;
-            case NONE -> throw new IllegalArgumentException("Invalid Player NONE");
-        };
-
-        for(Point direction : DIRECTIONS) {
-            temp.set(point)
-                .translate(direction);
-            while(pieceGrid[temp.y][temp.x].getPlayer() == rival) {
-                temp.translate(direction);
-            }
-            if(pieceGrid[temp.y][temp.x].getPlayer() == Player.NONE) {
-                continue;
-            }
-            temp.detranslate(direction);
-            while(pieceGrid[temp.y][temp.x].getPlayer() == rival) {
-                flipCount++;
-                if (applyChange) {
-                    pieceGrid[temp.y][temp.x].setPlayer(player);
-                }
-                temp.detranslate(direction);
-            }
-        }
-
-        return flipCount;
     }
 }

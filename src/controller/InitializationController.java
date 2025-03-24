@@ -2,6 +2,7 @@ package controller;
 
 import model.Board;
 import model.enums.Player;
+import model.rules.Rule;
 import model.rules.RuleImplReversi;
 import view.Window;
 import view.WindowImplConsole;
@@ -20,11 +21,15 @@ public class InitializationController {
     }
 
     public void initialize() {
-        initializeBoards();
+        initialize(new RuleImplReversi());
+    }
+
+    public void initialize(Rule rule) {
+        initializeBoards(rule);
         inputPlayerNames();
     }
 
-    private void initializeBoards() {
+    private void initializeBoards(Rule rule) {
         System.out.println("Enter board size: (one number only)");
         int boardSize = scanner.nextInt();
 
@@ -33,7 +38,7 @@ public class InitializationController {
 
         boards.ensureCapacity(boardNumber);
         for(int i = 0; i < boardNumber; i++) {
-            boards.add(new Board(boardSize, boardSize, new RuleImplReversi(), new WindowImplConsole(boardSize+1,boardSize*2+Board.ULTIMATE_ANSWER)));
+            boards.add(new Board(boardSize, boardSize, rule, new WindowImplConsole(boardSize+1,boardSize*2+Board.ULTIMATE_ANSWER)));
         }
         scanner.nextLine();
     }

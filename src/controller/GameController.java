@@ -1,6 +1,8 @@
 package controller;
 
 import model.Board;
+import model.Piece;
+import model.Point;
 import model.enums.Player;
 
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ public class GameController {
         this.whiteWinCount = 0;
         this.whitePlayerName = boards.getFirst().getWhitePlayerName();
         this.blackPlayerName = boards.getFirst().getBlackPlayerName();
+        boards.getFirst().show();
     }
 
     public void showBoard() {
@@ -59,11 +62,11 @@ public class GameController {
     /**
      * @return True if the position is valid and the piece is placed successfully
      */
-    protected boolean placePiece(int row, int col) {
+    protected boolean placePiece(Point point) {
         if( boards.get(currentBoard).isGameOver() ) {
             return false;
         }
-        if( !boards.get(currentBoard).placePiece(row, col) ) {
+        if( !boards.get(currentBoard).placePiece(point) ) {
             return false;
         }
         showBoard();

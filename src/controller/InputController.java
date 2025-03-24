@@ -1,6 +1,7 @@
 package controller;
 
 import model.Board;
+import model.Point;
 
 import java.util.Scanner;
 
@@ -54,7 +55,7 @@ public class InputController {
                 break;
             case 2:
                 commandBuffer.type = CommandType.PLACE_PIECE;
-                commandBuffer.arguments = new int[]{getRow(inputBuffer.charAt(0)),getCol(inputBuffer.charAt(1))};
+                commandBuffer.arguments = new int[]{getCol(inputBuffer.charAt(1)),getRow(inputBuffer.charAt(0))};
                 break;
             default:
                 commandBuffer.type = CommandType.NONE;
@@ -66,7 +67,7 @@ public class InputController {
         return switch (commandBuffer.type) {
             case NONE -> false;
             case CHANGE_BOARD -> gameController.setCurrentBoard(commandBuffer.arguments[0]);
-            case PLACE_PIECE -> gameController.placePiece(commandBuffer.arguments[0], commandBuffer.arguments[1]);
+            case PLACE_PIECE -> gameController.placePiece(new Point(commandBuffer.arguments[0], commandBuffer.arguments[1]));
         };
     }
 

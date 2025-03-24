@@ -83,17 +83,16 @@ public class Board{
 
     /**
      * try place piece at the position given
-     * @param col column position
-     * @param row row position
+     * @param point position
      * @return true if succeeded
      */
-    public boolean placePiece(int col, int row) {
-        if( col <= 0 || col > width ||
-            row <= 0 || row > height ||
-            !rule.placePieceValidationCheck(col, row, currentPlayer, pieceGrid)) {
+    public boolean placePiece(Point point) {
+        if( point.x <= 0 || point.x > width ||
+            point.y <= 0 || point.y > height ||
+            !rule.placePieceValidationCheck(point, currentPlayer, pieceGrid)) {
             return false;
         }
-        rule.placePiece(col, row, currentPlayer, pieceGrid);
+        rule.placePiece(point, currentPlayer, pieceGrid);
         currentPlayer = rule.nextPlayer(currentPlayer, pieceGrid);
         updateBoard();
         if(rule.gameOverCheck(currentPlayer, pieceGrid)) {
@@ -152,13 +151,15 @@ public class Board{
      * get and show valid moves for current player
      */
     private void showValidMoves() {
-        Point point = new Point(0, 0);
-        for(int i = 1; i <= height; i++) {
-            for(int j = 1; j <= width; j++) {
-                if(rule.placePieceValidationCheck(i, j, currentPlayer, pieceGrid)) {
-                    point.x = 2*j;
-                    point.y = i;
-                    boardView.setPixel(point, PieceImplReversi.VALID_MOVE);
+        Point viewPoint = new Point(0, 0);
+        Point boardPoint = new Point(0, 0);
+        for(boardPoint.y = 1; boardPoint.y <= height; boardPoint.y++) {
+            viewPoint.y++;
+            viewPoint.x = 0;
+            for(boardPoint.x = 1; boardPoint.x <= width; boardPoint.x++) {
+                viewPoint.x+=2;
+                if(rule.placePieceValidationCheck(boardPoint, currentPlayer, pieceGrid)) {
+                    boardView.setPixel(viewPoint, PieceImplReversi.VALID_MOVE);
                 }
             }
         }

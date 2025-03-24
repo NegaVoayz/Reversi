@@ -27,21 +27,19 @@ public class Reversi{
         InputController inputController = new InputController(scanner, gameController);
         SettlementController settlementController = new SettlementController(gameController);
 
-        Window.clear();
-        gameController.showBoard();
         while(!gameController.isAllGameOver()) {
-            boolean validMove = inputController
+            boolean isValidMove = inputController
                     .readCommand()
                     .parseCommand()
                     .executeCommand();
-            if( !validMove ) {
+            if( !isValidMove ) {
                 System.out.println("oOps! invalid move");
             }
         }
 
         System.out.println("Game Over!");
         try {
-            TimeUnit.SECONDS.sleep(3);
+            TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException _) {
             /* I don't care unless your computer
              * ordered a pineapple pizza
