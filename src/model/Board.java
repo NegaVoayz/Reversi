@@ -1,24 +1,21 @@
 package model;
 
-import view.Canvas;
-import view.Pixel;
+import model.enums.Player;
+import model.rules.Rule;
+import view.*;
 
 public class Board{
-    public enum Player{
-        WHITE,
-        NONE,
-        BLACK,
-    }
     // Answer to the Ultimate Question of Life, the Universe, and Everything
     public static final int ULTIMATE_ANSWER = 42;
-    public static final int canvas_height = 13;
-    public static int canvas_width = ULTIMATE_ANSWER;
 
     private static final int MAX_BOARD_SIZE = 16;
     private static final int DEFAULT_BOARD_SIZE = 8;
 
+    private final Rule rule;
     private final Piece[][] pieceGrid;
-    private final Canvas canvas;
+    private final Window window;
+    private final View boardView;
+    private final View statisticsView;
     private final int height;
     private final int width;
     private Player currentPlayer;
@@ -27,34 +24,31 @@ public class Board{
     private boolean isGameOver;
     private Player winner;
 
-    public Board(int height, int width, Canvas canvas) {
-        if(height < 0 || height > MAX_BOARD_SIZE ||
-            width < 0 || width > MAX_BOARD_SIZE ) {
-            throw new IllegalArgumentException("Invalid board size: too large or negative");
-        }
+    public Board(int height, int width, Rule rule, Window window) {
         if(height == 0) {
             height = DEFAULT_BOARD_SIZE;
         }
         if(width == 0) {
             width = DEFAULT_BOARD_SIZE;
         }
+        if(height < 3 || height > MAX_BOARD_SIZE ||
+            width < 3 || width > MAX_BOARD_SIZE ) {
+            throw new IllegalArgumentException("Invalid board size: too large or too small");
+        }
         this.height = height;
         this.width = width;
+        this.rule = rule;
         this.currentPlayer = Player.BLACK;
         this.pieceGrid = new Piece[height+2][width+2];
-        this.canvas = canvas;
+        this.rule.initializeGrid(pieceGrid);
+        this.window = window;
+        this.boardView = window.createView(new Rect(0, height+1, 0, width*2+1));
+        if(this.boardView == null) { throw new IllegalArgumentException("Unable to draw board: Space occupied"); }
+        this.statisticsView = window.createView(new Rect(0, height+1, width*2+2, width*2+ULTIMATE_ANSWER));
+        if(this.statisticsView == null) { throw new IllegalArgumentException("Unable to draw statistics: Space occupied"); }
         initializeCanvas();
-        initializeGrid();
-
         updateBoard();
-        // well, it's possible some special pieceGrid size
-        //   could cause an immediate endgame
-        if(!getValidMoves()) {
-            switchPlayer();
-            this.isGameOver = !getValidMoves();
-        } else {
-            this.isGameOver = false;
-        }
+        showValidMoves();
     }
 
     /**
@@ -70,12 +64,22 @@ public class Board{
         }
         this.whitePlayerName = whitePlayerName;
         this.blackPlayerName = blackPlayerName;
+        displayPlayerInfo();
         return true;
+    }
+
+    public String getWhitePlayerName() {
+        return whitePlayerName;
+    }
+    public String getBlackPlayerName() {
+        return blackPlayerName;
     }
 
     public boolean isGameOver() {
         return isGameOver;
     }
+
+    public Player getWinner() { return winner; }
 
     /**
      * try place piece at the position given
@@ -86,140 +90,97 @@ public class Board{
     public boolean placePiece(int col, int row) {
         if( col <= 0 || col > width ||
             row <= 0 || row > height ||
-            !pieceGrid[row][col].isValid(getCurrentPlayerPieceType())) {
+            !rule.placePieceValidationCheck(col, row, currentPlayer, pieceGrid)) {
             return false;
         }
-        pieceGrid[row][col].placePiece(getCurrentPlayerPieceType());
-        switchPlayer();
+        rule.placePiece(col, row, currentPlayer, pieceGrid);
+        currentPlayer = rule.nextPlayer(currentPlayer, pieceGrid);
         updateBoard();
-        if(getValidMoves()) {
-            return true;
+        if(rule.gameOverCheck(currentPlayer, pieceGrid)) {
+            this.isGameOver = true;
+            this.winner = rule.gameWonCheck(currentPlayer, pieceGrid);
+            displayWinnerInfo(winner);
+        } else {
+            showValidMoves();
+            displayPlayerInfo();
         }
-        switchPlayer();
-        this.isGameOver = !getValidMoves();
         return true;
     }
 
-    /**
-     * paint game window
-     */
-    public void paint() {
-        if(isGameOver) {
-            displayWinnerInfo(getWinner());
-        } else {
-            displayPlayerInfo();
-        }
-        canvas.paint(false);
-    }
-
-
-    /**
-     * allocate pieceGrid and set the start pieces
-     */
-    private void initializeGrid() {
-        for(int i = 0; i < height+2; i++) {
-            for(int j = 0; j < width+2; j++) {
-                pieceGrid[i][j] = new Piece(j, i, pieceGrid);
-            }
-        }
-
-        pieceGrid[height/2][width/2].setType(Piece.Type.WHITE);
-        pieceGrid[height/2][width/2+1].setType(Piece.Type.BLACK);
-        pieceGrid[height/2+1][width/2].setType(Piece.Type.BLACK);
-        pieceGrid[height/2+1][width/2+1].setType(Piece.Type.WHITE);
-    }
 
     /**
      * show edge scales
      */
     private void initializeCanvas() {
-        if(!canvas.resize(height + 5, canvas_width)) {
-            throw new IllegalArgumentException("Unable to draw board: Space occupied");
+        Point point = new Point(0, 0);
+        for(point.y = 1; point.y <= height && point.y <= 9; point.y++) {
+            boardView.setPixel(point, new PixelImplConsole((char)('0'+point.y)));
         }
-        for(int i = 1; i <= height && i <= 9; i++) {
-            canvas.setPixel(0, i, new Pixel((char)('0'+i)));
+        for(; point.y <= height; point.y++) {
+            boardView.setPixel(point, new PixelImplConsole((char)('a'+point.y-10)));
         }
-        for(int i = 10; i <= height; i++) {
-            canvas.setPixel(0, i, new Pixel((char)('a'+i-10)));
-        }
+        point.y = 0;
         for(int j = 1; j <= width; j++) {
-            canvas.setPixel(2*j-1, 0, new Pixel((char)('A'+j-1)));
+            point.x = 2*j-1;
+            boardView.setPixel(point, new PixelImplConsole((char)('A'+j-1)));
         }
     }
 
     /**
-     * switch player when his turn ends
+     * show the board on the screen
+     * @return true if succeed
      */
-    private void switchPlayer(){
-        if(currentPlayer == Player.WHITE) {
-            currentPlayer = Player.BLACK;
-        } else {
-            currentPlayer = Player.WHITE;
-        }
-        return;
-    }
-
-    /**
-     * get current player's piece color
-     * actually convert player type to piece type
-     * @return piece color
-     */
-    private Piece.Type getCurrentPlayerPieceType(){
-        if(currentPlayer == Player.WHITE) {
-            return Piece.Type.WHITE;
-        } else {
-            return Piece.Type.BLACK;
-        }
+    public boolean show() {
+        return window.forcePaint();
     }
 
     /**
      * update pieces on canvas
      */
     private void updateBoard() {
+        Point point = new Point(0, 0);
         for(int i = 1; i <= height; i++) {
             for(int j = 1; j <= width; j++) {
-                canvas.setPixel(2*j-1, i, pieceGrid[i][j].getPixel());
+                point.x = 2*j;
+                point.y = i;
+                boardView.setPixel(point, pieceGrid[i][j].getPixel());
             }
         }
     }
 
     /**
      * get and show valid moves for current player
-     * @return true when there are any moves valid
      */
-    private boolean getValidMoves() {
-        boolean movable = false;
-        Piece.Type type;
-        type = getCurrentPlayerPieceType();
-
+    private void showValidMoves() {
+        Point point = new Point(0, 0);
         for(int i = 1; i <= height; i++) {
             for(int j = 1; j <= width; j++) {
-                if(pieceGrid[i][j].isValid(type)) {
-                    movable = true;
-                    canvas.setPixel(2*j-1, i, new Pixel(Piece.VALID_MOVE));
+                if(rule.placePieceValidationCheck(i, j, currentPlayer, pieceGrid)) {
+                    point.x = 2*j;
+                    point.y = i;
+                    boardView.setPixel(point, PieceImplReversi.VALID_MOVE);
                 }
             }
         }
-
-        return movable;
     }
 
     /**
      * show player info and the current player while playing
      */
     private void displayPlayerInfo() {
+        int align = (height-2)/2;
         String buf;
         buf = "Player[" + whitePlayerName + "] ";
         if(currentPlayer == Player.WHITE) {
-            buf += Piece.WHITE_PIECE;
+            buf += ((PixelImplConsole)PieceImplReversi.WHITE_PIECE).get();
         }
-        canvas.println(height+2, buf); 
+        statisticsView.println(align, buf);
 
         buf = "Player[" + blackPlayerName + "] ";
         if(currentPlayer == Player.BLACK) {
-            buf += Piece.BLACK_PIECE;
+            buf += ((PixelImplConsole)PieceImplReversi.BLACK_PIECE).get();
         }
-        canvas.println(height+3, buf); 
+        statisticsView.println(align+1, buf);
         
         buf = "Current Player: ";
         if(currentPlayer == Player.WHITE) {
@@ -227,7 +188,7 @@ public class Board{
         } else {
             buf += "Black";
         }
-        canvas.println(height+4, buf); 
+        statisticsView.println(align+2, buf);
     }
 
     /**
@@ -235,58 +196,21 @@ public class Board{
      * @param type the winner
      */
     private void displayWinnerInfo(Player type) {
+        int align = (height+1-3)/2;
         switch(type) {
             case Player.WHITE:
-                canvas.println(height+2, "White Wins"); 
-                canvas.println(height+3, "Good game " + whitePlayerName); 
+                statisticsView.println(align, "White Wins");
+                statisticsView.println(align+1, "Good game " + whitePlayerName);
                 break;
             case Player.BLACK:
-                canvas.println(height+2, "Black Wins"); 
-                canvas.println(height+3, "Good game " + blackPlayerName); 
+                statisticsView.println(align, "Black Wins");
+                statisticsView.println(align+1, "Good game " + blackPlayerName);
                 break;
             case Player.NONE:
-                canvas.println(height+2, "Draw"); 
-                canvas.println(height+3, "Cool"); 
+                statisticsView.println(align, "Draw");
+                statisticsView.println(align+1, "Cool");
                 break;
         }
-        canvas.println(height+4, "");
-    }
-
-    /**
-     * count pieces and return the winner
-     * @return the winner
-     */
-    public  Player getWinner() {
-        if(winner != null) {
-            return winner;
-        }
-        int whitePieceCount = 0;
-        int blackPieceCount = 0;
-        for(int i = 1; i <= height; i++) {
-            for(int j = 1; j <= width; j++) {
-                switch (pieceGrid[i][j].getType()) {
-                    case Piece.Type.WHITE:
-                        whitePieceCount++;
-                        break;
-                    case Piece.Type.BLACK:
-                        blackPieceCount++;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        if(whitePieceCount > blackPieceCount ) {
-            winner = Player.WHITE;
-            return Player.WHITE;
-        }
-        if(whitePieceCount < blackPieceCount ) {
-            winner = Player.BLACK;
-            return Player.BLACK;
-        }
-        winner = Player.NONE;
-        return Player.NONE;// draw
-        // goodbye, VS Code!
+        statisticsView.println(align+2, "");
     }
 }

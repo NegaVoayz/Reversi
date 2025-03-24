@@ -1,4 +1,4 @@
-package view;
+package model;
 
 public class Point {
     public int x;
@@ -7,5 +7,11 @@ public class Point {
     public Point(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+
+    public Point translate(Point p) {
+        this.x += p.x;
+        this.y += p.y;
+        return this;
     }
 }
