@@ -44,7 +44,7 @@ public class Board{
         this.window = window;
         this.boardView = window.createView(new Rect(0, height+1, 0, width*2+1));
         if(this.boardView == null) { throw new IllegalArgumentException("Unable to draw board: Space occupied"); }
-        this.statisticsView = window.createView(new Rect(0, height+1, width*2+2, width*2+ULTIMATE_ANSWER));
+        this.statisticsView = window.createView(new Rect(0, height+1, width*2+1, width*2+ULTIMATE_ANSWER));
         if(this.statisticsView == null) { throw new IllegalArgumentException("Unable to draw statistics: Space occupied"); }
         initializeCanvas();
         updateBoard();
@@ -140,7 +140,7 @@ public class Board{
         Point point = new Point(0, 0);
         for(int i = 1; i <= height; i++) {
             for(int j = 1; j <= width; j++) {
-                point.x = 2*j;
+                point.x = 2*j-1;
                 point.y = i;
                 boardView.setPixel(point, pieceGrid[i][j].getPixel());
             }
@@ -155,12 +155,12 @@ public class Board{
         Point boardPoint = new Point(0, 0);
         for(boardPoint.y = 1; boardPoint.y <= height; boardPoint.y++) {
             viewPoint.y++;
-            viewPoint.x = 0;
+            viewPoint.x = 1;
             for(boardPoint.x = 1; boardPoint.x <= width; boardPoint.x++) {
-                viewPoint.x+=2;
                 if(rule.placePieceValidationCheck(boardPoint, currentPlayer, pieceGrid)) {
                     boardView.setPixel(viewPoint, PieceImplReversi.VALID_MOVE);
                 }
+                viewPoint.x+=2;
             }
         }
     }

@@ -1,12 +1,10 @@
 package controller;
 
 import model.Board;
-import model.Piece;
 import model.Point;
 import model.enums.Player;
 
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class GameController {
     private final ArrayList<Board> boards;

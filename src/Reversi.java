@@ -7,7 +7,6 @@ import controller.InitializationController;
 import controller.InputController;
 import controller.SettlementController;
 import model.Board;
-import view.Window;
 
 public class Reversi{
 

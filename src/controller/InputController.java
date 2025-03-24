@@ -1,6 +1,5 @@
 package controller;
 
-import model.Board;
 import model.Point;
 
 import java.util.Scanner;
