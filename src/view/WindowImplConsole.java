@@ -1,7 +1,7 @@
 package view;
 
-import model.Point;
-import model.Rect;
+import model.structs.Point;
+import model.structs.Rect;
 
 public class WindowImplConsole implements Window {
     private final Pixel[][] buffer;

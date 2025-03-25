@@ -2,7 +2,9 @@ package controller;
 
 import model.Board;
 import model.enums.Player;
+import model.factories.BoardFactory;
 import model.rules.Rule;
+import model.rules.RuleImplLandfill;
 import model.rules.RuleImplReversi;
 import view.Window;
 import view.WindowImplConsole;
@@ -13,10 +15,13 @@ import java.util.Scanner;
 public class InitializationController {
     private final Scanner scanner;
     private final ArrayList<Board> boards;
+    private final BoardFactory boardFactory;
+    private int boardNumber;
 
     public InitializationController(Scanner scanner, ArrayList<Board> boards) {
         this.scanner = scanner;
         this.boards = boards;
+        this.boardFactory = BoardFactory.create();
     }
 
     public void initialize() {
@@ -24,21 +29,44 @@ public class InitializationController {
     }
 
     public void initialize(Rule rule) {
-        initializeBoards(rule);
+        inputBoardRule();
+        inputBoardSize();
+        inputBoardCount();
         inputPlayerNames();
+        initializeBoards();
     }
 
-    private void initializeBoards(Rule rule) {
-        System.out.println("Enter board size: (one number only)");
-        int boardSize = scanner.nextInt();
-
-        System.out.println("Enter board number: ");
-        int boardNumber = scanner.nextInt();
-
+    private void initializeBoards() {
         boards.ensureCapacity(boardNumber);
         for(int i = 0; i < boardNumber; i++) {
-            boards.add(new Board(boardSize, boardSize, rule, new WindowImplConsole(boardSize+1,boardSize*2+Board.ULTIMATE_ANSWER)));
+            boards.add(boardFactory.createBoard());
         }
+    }
+
+    private void inputBoardRule() {
+        System.out.println("Enter board rule: (peace or reversi)");
+        String input = scanner.nextLine();
+        if( input.compareToIgnoreCase("peace")==0 ) {
+            boardFactory.setRule(new RuleImplLandfill());
+        } else if( input.equals("reversi") ) {
+            boardFactory.setRule(new RuleImplReversi());
+        } else {
+            System.out.println("Invalid board rule, using default rule REVERSI.");
+            boardFactory.useDefaultRule();
+        }
+    }
+
+    private void inputBoardSize() {
+        System.out.println("Enter board size: (one number only)");
+        int boardSize = scanner.nextInt();
+        boardFactory
+                .setBoardSizeCol(boardSize)
+                .setBoardSizeRow(boardSize);
+    }
+
+    private void inputBoardCount() {
+        System.out.println("Enter board number: ");
+        boardNumber = scanner.nextInt();
         scanner.nextLine();
     }
 
@@ -77,8 +105,8 @@ public class InitializationController {
             blackPlayerName = getName(Player.BLACK);
         } while (blackPlayerName.length() > 32 || blackPlayerName.isEmpty());
 
-        for(Board board : boards) {
-            board.setName(whitePlayerName, blackPlayerName);
-        }
+        boardFactory
+                .setWhitePlayerName(whitePlayerName)
+                .setBlackPlayerName(blackPlayerName);
     }
 }

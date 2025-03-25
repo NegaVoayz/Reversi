@@ -1,6 +1,7 @@
 package controller;
 
-import model.Point;
+import model.rules.InputRule;
+import model.structs.Point;
 
 import java.util.Scanner;
 
@@ -9,22 +10,23 @@ public class InputController {
     private final GameController gameController;
     private enum CommandType {
         NONE,
+        HELP,
         CHANGE_BOARD,
+        CREATE_BOARD,
+        LIST_BOARDS,
         PLACE_PIECE,
     }
     private static class Command {
-        CommandType type;
-        int[] arguments;
+        public CommandType type;
+        public String content;
     }
+    private final Command command;
 
     public InputController(Scanner scanner, GameController gameController) {
         this.scanner = scanner;
         this.gameController = gameController;
-        this.commandBuffer = new Command();
+        this.command = new Command();
     }
-
-    private String inputBuffer;
-    private final Command commandBuffer;
 
     /**
      * Retrieves the input decision from the player.
@@ -35,9 +37,9 @@ public class InputController {
         System.out.print("your decision is: ");
         // if player get bored, die
         if(!scanner.hasNext()) {
-            inputBuffer = "wohohohoho";
+            command.content = "wohohohoho";
         }
-        inputBuffer = scanner.nextLine();
+        command.content = scanner.nextLine();
         return this;
     }
 
@@ -47,63 +49,80 @@ public class InputController {
      * @return self for chain calling
      */
     public InputController parseCommand() {
-        switch (inputBuffer.length()) {
-            case 1:
-                commandBuffer.type = CommandType.CHANGE_BOARD;
-                commandBuffer.arguments = new int[]{getIndex(inputBuffer.charAt(0))};
+        String[] tokens = command.content.split("\\s+");
+        switch (tokens[0]) {
+            case "help":
+            case "man":
+                this.command.type = CommandType.HELP;
                 break;
-            case 2:
-                commandBuffer.type = CommandType.PLACE_PIECE;
-                commandBuffer.arguments = new int[]{getCol(inputBuffer.charAt(1)),getRow(inputBuffer.charAt(0))};
+            case "switch":
+                if(tokens.length == 3 && tokens[1].equals("to")) {
+                    command.type = CommandType.CHANGE_BOARD;
+                    command.content = tokens[2];
+                    break;
+                }
+                command.type = CommandType.NONE;
+                break;
+            case "move":
+                if(tokens.length == 2) {
+                    command.type = CommandType.PLACE_PIECE;
+                    command.content = tokens[1];
+                    break;
+                }
+                command.type = CommandType.NONE;
+                break;
+            case "create":
+                if(tokens.length >= 3 && tokens.length <= 5 && tokens[1].equals("board")) {
+                    command.type = CommandType.CREATE_BOARD;
+                    if(tokens.length == 4) {
+                        command.content = tokens[2]+" "+tokens[3]+" "+tokens[3];
+                    } else if(tokens.length == 5) {
+                        command.content = tokens[2]+" "+tokens[3]+" "+tokens[4];
+                    } else {
+                        command.content = tokens[2];
+                    }
+                    break;
+                }
+                command.type = CommandType.NONE;
+                break;
+            case "list":
+                if(tokens.length == 2) {
+                    command.type = CommandType.LIST_BOARDS;
+                    command.content = tokens[1];
+                    break;
+                } else if(tokens.length == 1) {
+                    command.type = CommandType.LIST_BOARDS;
+                    command.content = "";
+                    break;
+                }
+                command.type = CommandType.NONE;
                 break;
             default:
-                commandBuffer.type = CommandType.NONE;
+                command.type = CommandType.NONE;
+                break;
         }
         return this;
     }
 
     public boolean executeCommand() {
-        return switch (commandBuffer.type) {
+        return switch (command.type) {
             case NONE -> false;
-            case CHANGE_BOARD -> gameController.setCurrentBoard(commandBuffer.arguments[0]);
-            case PLACE_PIECE -> gameController.placePiece(new Point(commandBuffer.arguments[0], commandBuffer.arguments[1]));
+            case HELP -> showHelp();
+            case CHANGE_BOARD -> gameController.setCurrentBoard(Integer.parseInt(command.content));
+            case CREATE_BOARD -> gameController.parseCreate(command.content).createBoard();
+            case LIST_BOARDS  -> gameController.selectBoards(command.content).listBoards();
+            case PLACE_PIECE  -> gameController.parseMove(command.content).placePiece();
         };
     }
 
-    /**
-     * Converts a hex code to its corresponding integer value.
-     * @param code The character code representing the board No.
-     * @return The integer value of board No.
-     */
-    private static int getIndex(char code) {
-        if(code > '9') {
-            return ((int)code|32)-'a'+10;
-        } else {
-            return (int)code-'0';
-        }
-    }
-
-    /**
-     * Converts a column character code to its corresponding integer value.
-     *
-     * @param code The character code representing the column.
-     * @return The integer value of the column.
-     */
-    private static int getCol(char code) {
-        return (int)code-'A'+1;
-    }
-
-    /**
-     * Converts a row character code to its corresponding integer value.
-     *
-     * @param code The character code representing the row.
-     * @return The integer value of the row.
-     */
-    private static int getRow(char code) {
-        if(code > '9') {
-            return (int)code-'a'+10;
-        } else {
-            return (int)code-'0';
-        }
+    private static boolean showHelp() {
+        System.out.println("Command Manual:");
+        System.out.println("| command      | arguments                                        | effect                      |");
+        System.out.println("| help/man     |                                                  | help                        |");
+        System.out.println("| switch to    | board NO                                         | switch to the desired board |");
+        System.out.println("| move         | position(e.g. 3D)                                | place piece at [position]   |");
+        System.out.println("| create board | [mode: reversi/peace] ([column size] [row size]) | create new board            |");
+        System.out.println("| list         | ([mode: reversi/peace/current])                  | list the boards.            |");
+        return true;
     }
 }

@@ -1,7 +1,7 @@
 package view;
 
-import model.Point;
-import model.Rect;
+import model.structs.Point;
+import model.structs.Rect;
 
 public class ViewImplConsole implements View {
     private final Window window;

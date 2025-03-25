@@ -1,7 +1,7 @@
 package controller;
 
 import model.Board;
-import model.Rect;
+import model.structs.Rect;
 import view.*;
 
 public class SettlementController {

@@ -1,7 +1,11 @@
 package model;
 
 import model.enums.Player;
+import model.rules.InputRule;
 import model.rules.Rule;
+import model.structs.Move;
+import model.structs.Point;
+import model.structs.Rect;
 import view.*;
 
 public class Board{
@@ -24,13 +28,13 @@ public class Board{
     private boolean isGameOver;
     private Player winner;
 
-    public Board(int height, int width, Rule rule, Window window) {
-        if(height == 0) {
-            height = DEFAULT_BOARD_SIZE;
-        }
-        if(width == 0) {
-            width = DEFAULT_BOARD_SIZE;
-        }
+    public Board(
+            int height,
+            int width,
+            Rule rule,
+            Window window,
+            String whitePlayerName,
+            String blackPlayerName) {
         if(height < 3 || height > MAX_BOARD_SIZE ||
             width < 3 || width > MAX_BOARD_SIZE ) {
             throw new IllegalArgumentException("Invalid board size: too large or too small");
@@ -40,32 +44,25 @@ public class Board{
         this.rule = rule;
         this.currentPlayer = Player.BLACK;
         this.pieceGrid = new Piece[height+2][width+2];
-        this.rule.initializeGrid(pieceGrid);
+        this.rule.getGameRule().initializeGrid(pieceGrid);
         this.window = window;
         this.boardView = window.createView(new Rect(0, height+1, 0, width*2+1));
         if(this.boardView == null) { throw new IllegalArgumentException("Unable to draw board: Space occupied"); }
         this.statisticsView = window.createView(new Rect(0, height+1, width*2+1, width*2+ULTIMATE_ANSWER));
         if(this.statisticsView == null) { throw new IllegalArgumentException("Unable to draw statistics: Space occupied"); }
-        initializeCanvas();
-        updateBoard();
-        showValidMoves();
-    }
-
-    /**
-     * set player names
-     * keep names below 32 letters
-     * @param whitePlayerName the name of whom plays white
-     * @param blackPlayerName the name of whom plays black
-     * @return true if succeeded
-     */
-    public boolean setName(String whitePlayerName, String blackPlayerName) {
         if(whitePlayerName.length() > 32 || blackPlayerName.length() > 32) {
-            return false;
+            throw new IllegalArgumentException("Unable to initialize name: too long");
         }
         this.whitePlayerName = whitePlayerName;
         this.blackPlayerName = blackPlayerName;
+        initializeCanvas();
+        updateBoard();
         displayPlayerInfo();
-        return true;
+        showValidMoves();
+    }
+
+    public String getRuleName() {
+        return rule.getRuleName();
     }
 
     public String getWhitePlayerName() {
@@ -73,6 +70,10 @@ public class Board{
     }
     public String getBlackPlayerName() {
         return blackPlayerName;
+    }
+
+    public InputRule getInputRule() {
+        return rule.getInputRule();
     }
 
     public boolean isGameOver() {
@@ -83,21 +84,21 @@ public class Board{
 
     /**
      * try place piece at the position given
-     * @param point position
+     * @param move position
      * @return true if succeeded
      */
-    public boolean placePiece(Point point) {
-        if( point.x <= 0 || point.x > width ||
-            point.y <= 0 || point.y > height ||
-            !rule.placePieceValidationCheck(point, currentPlayer, pieceGrid)) {
+    public boolean placePiece(Move move) {
+        if( move.end.x <= 0 || move.end.x > width ||
+                move.end.y <= 0 || move.end.y > height ||
+            !this.rule.getGameRule().placePieceValidationCheck(move, currentPlayer, pieceGrid)) {
             return false;
         }
-        rule.placePiece(point, currentPlayer, pieceGrid);
-        currentPlayer = rule.nextPlayer(currentPlayer, pieceGrid);
+        this.rule.getGameRule().placePiece(move, currentPlayer, pieceGrid);
+        currentPlayer = this.rule.getGameRule().nextPlayer(currentPlayer, pieceGrid);
         updateBoard();
-        if(rule.gameOverCheck(currentPlayer, pieceGrid)) {
+        if(this.rule.getGameRule().gameOverCheck(currentPlayer, pieceGrid)) {
             this.isGameOver = true;
-            this.winner = rule.gameWonCheck(currentPlayer, pieceGrid);
+            this.winner = this.rule.getGameRule().gameWonCheck(currentPlayer, pieceGrid);
             displayWinnerInfo(winner);
         } else {
             showValidMoves();
@@ -152,13 +153,13 @@ public class Board{
      */
     private void showValidMoves() {
         Point viewPoint = new Point(0, 0);
-        Point boardPoint = new Point(0, 0);
-        for(boardPoint.y = 1; boardPoint.y <= height; boardPoint.y++) {
+        Move move = new Move(new Point(0,0), new Point(0,0), currentPlayer);
+        for(move.end.y = 1; move.end.y <= height; move.end.y++) {
             viewPoint.y++;
             viewPoint.x = 1;
-            for(boardPoint.x = 1; boardPoint.x <= width; boardPoint.x++) {
-                if(rule.placePieceValidationCheck(boardPoint, currentPlayer, pieceGrid)) {
-                    boardView.setPixel(viewPoint, PieceImplReversi.VALID_MOVE);
+            for(move.end.x = 1; move.end.x <= width; move.end.x++) {
+                if(this.rule.getGameRule().placePieceValidationCheck(move, currentPlayer, pieceGrid)) {
+                    boardView.setPixel(viewPoint, PieceImplMonochrome.VALID_MOVE);
                 }
                 viewPoint.x+=2;
             }
@@ -173,13 +174,13 @@ public class Board{
         String buf;
         buf = "Player[" + whitePlayerName + "] ";
         if(currentPlayer == Player.WHITE) {
-            buf += ((PixelImplConsole)PieceImplReversi.WHITE_PIECE).get();
+            buf += ((PixelImplConsole) PieceImplMonochrome.WHITE_PIECE).get();
         }
         statisticsView.println(align, buf);
 
         buf = "Player[" + blackPlayerName + "] ";
         if(currentPlayer == Player.BLACK) {
-            buf += ((PixelImplConsole)PieceImplReversi.BLACK_PIECE).get();
+            buf += ((PixelImplConsole) PieceImplMonochrome.BLACK_PIECE).get();
         }
         statisticsView.println(align+1, buf);
         

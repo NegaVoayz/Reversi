@@ -1,4 +1,4 @@
-package model;
+package model.structs;
 
 public class Rect {
     public int top;

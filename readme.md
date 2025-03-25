@@ -1,10 +1,28 @@
-# Reversi Project 2.2.1
+# Reversi Project 2.3.0
 
 ## Class & Function Document
 
 ### Index
 
 [toc]
+
+### How to play(command manual)
+
+* #### Main Command
+
+  Well, `help` must be the most useful and important command.
+
+* #### Other Commands
+
+  Why not calling `help` for help?
+
+  | command      | arguments                                        | effect                      |
+  | ------------ | ------------------------------------------------ | --------------------------- |
+  | help/man     |                                                  | help                        |
+  | switch to    | board NO                                         | switch to the desired board |
+  | move         | position(e.g. 3D)                                | place piece at [position]   |
+  | create board | [mode: reversi/peace] ([column size] [row size]) | create new board            |
+  | list         | ([mode: reversi/peace/current])                  | list the boards.            |
 
 ### Core Design:
 
@@ -26,6 +44,10 @@ Using the MVC structure and interfaces to decouple the view, game and user inter
 
   Handles user inputs and parse instructions for the game controller.
 
+* **Settlement Controller**
+
+  Show the final result.
+
 #### Board, Pieces, and Rules:
 
 * **Rules**
@@ -39,6 +61,8 @@ Using the MVC structure and interfaces to decouple the view, game and user inter
 * **Board**
 
   Board is set as a general type that fits almost all chess games with only black and white pieces.
+  
+  Can be constructed by `BoardFactory`
 
 #### View
 
@@ -83,3 +107,11 @@ Refactored the project to decouple.
 #### V2.2.1
 
 Turn all confusing coordinates into `Point`
+
+#### V2.3.0
+
+Use `BoardFactory` to initialize boards.
+
+Enables more functions.
+
+Use command-based input style.

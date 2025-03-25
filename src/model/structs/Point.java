@@ -1,4 +1,4 @@
-package model;
+package model.structs;
 
 public class Point {
     public int x;
@@ -7,6 +7,11 @@ public class Point {
     public Point(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+
+    public Point(Point start) {
+        this.x = start.x;
+        this.y = start.y;
     }
 
     public Point translate(Point p) {

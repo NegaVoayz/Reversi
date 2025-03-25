@@ -4,7 +4,7 @@ import model.enums.Player;
 import view.Pixel;
 import view.PixelImplConsole;
 
-public final class PieceImplReversi implements Piece {
+public final class PieceImplMonochrome implements Piece {
     
     public final static Pixel NONE_PIECE  =  new PixelImplConsole(' ');
     public final static Pixel WHITE_PIECE =  new PixelImplConsole('○');
@@ -13,7 +13,7 @@ public final class PieceImplReversi implements Piece {
 
     private Player player;
 
-    public PieceImplReversi() {
+    public PieceImplMonochrome() {
         this.player = Player.NONE;
     }
 
