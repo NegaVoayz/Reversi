@@ -7,8 +7,8 @@ import view.PixelImplConsole;
 public final class PieceImplMonochrome implements Piece {
     
     public final static Pixel NONE_PIECE  =  new PixelImplConsole(' ');
-    public final static Pixel WHITE_PIECE =  new PixelImplConsole('○');
-    public final static Pixel BLACK_PIECE =  new PixelImplConsole('●');
+    public final static Pixel WHITE_PIECE =  new PixelImplConsole('●');
+    public final static Pixel BLACK_PIECE =  new PixelImplConsole('○');
     public final static Pixel VALID_MOVE  =  new PixelImplConsole('·');
 
     private Player player;

@@ -79,26 +79,6 @@ public class GameRuleImplLandfill implements GameRule {
 
     @Override
     public Player gameWonCheck(Player currentPlayer, Piece[][] pieceGrid) {
-        int whiteCount = 0;
-        int blackCount = 0;
-        for(Piece[] pieces : pieceGrid) {
-            for(Piece piece : pieces) {
-                if(piece.getPlayer() == Player.WHITE) {
-                    whiteCount++;
-                } else {
-                    if(piece.getPlayer() == Player.BLACK) {
-                        blackCount++;
-                    }
-                }
-            }
-        }
-
-        if(whiteCount > blackCount) {
-            return Player.WHITE;
-        }
-        if(whiteCount < blackCount) {
-            return Player.BLACK;
-        }
         return Player.NONE;
     }
 }

@@ -22,10 +22,9 @@ public class Board{
     private final View statisticsView;
     private final int height;
     private final int width;
+    private final String whitePlayerName;
+    private final String blackPlayerName;
     private Player currentPlayer;
-    private String whitePlayerName;
-    private String blackPlayerName;
-    private boolean isGameOver;
     private Player winner;
 
     public Board(
@@ -77,7 +76,7 @@ public class Board{
     }
 
     public boolean isGameOver() {
-        return isGameOver;
+        return winner != null;
     }
 
     public Player getWinner() { return winner; }
@@ -97,7 +96,6 @@ public class Board{
         currentPlayer = this.rule.getGameRule().nextPlayer(currentPlayer, pieceGrid);
         updateBoard();
         if(this.rule.getGameRule().gameOverCheck(currentPlayer, pieceGrid)) {
-            this.isGameOver = true;
             this.winner = this.rule.getGameRule().gameWonCheck(currentPlayer, pieceGrid);
             displayWinnerInfo(winner);
         } else {

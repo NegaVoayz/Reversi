@@ -21,13 +21,15 @@ public class GameController {
     private int currentBoard;
     private int gameOverCount;
     private int whiteWinCount;
-    private BoardFactory boardFactory;
+    private int blackWinCount;
+    private final BoardFactory boardFactory;
 
     public GameController(ArrayList<Board> boards) {
         this.boards = boards;
         this.gameOverCount = 0;
-        this.currentBoard = 0;
+        this.currentBoard  = 0;
         this.whiteWinCount = 0;
+        this.blackWinCount = 0;
         this.whitePlayerName = boards.getFirst().getWhitePlayerName();
         this.blackPlayerName = boards.getFirst().getBlackPlayerName();
         this.boardsSelected = new LinkedList<>();
@@ -53,7 +55,7 @@ public class GameController {
     }
 
     protected int getBlackWinCount() {
-        return boards.size() - whiteWinCount;
+        return blackWinCount;
     }
 
     protected String getWhitePlayerName() {
@@ -109,7 +111,7 @@ public class GameController {
         return this.selectBoards("").listBoards();
     }
 
-    private Queue<Integer> boardsSelected;
+    private final Queue<Integer> boardsSelected;
     protected GameController selectBoards(String selector) {
         if(selector.isEmpty()) {
             selectAllBoards();
@@ -167,6 +169,8 @@ public class GameController {
         if( boards.get(currentBoard).isGameOver() ) {
             if(boards.get(currentBoard).getWinner() == Player.WHITE) {
                 whiteWinCount++;
+            } else if(boards.get(currentBoard).getWinner() == Player.BLACK) {
+                blackWinCount++;
             }
             gameOverCount++;
         }

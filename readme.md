@@ -1,4 +1,4 @@
-# Reversi Project 2.3.0
+# Reversi Project 2.3.1
 
 ## Class & Function Document
 
@@ -115,3 +115,7 @@ Use `BoardFactory` to initialize boards.
 Enables more functions.
 
 Use command-based input style.
+
+#### V2.3.1
+
+Fixed the bug that all draw matches will be taken as black win.
