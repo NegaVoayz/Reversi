@@ -1,4 +1,4 @@
-# Reversi Project 2.4.1
+# Reversi Project 2.4.2
 
 ## Class & Function Document
 
@@ -16,14 +16,14 @@
 
   Why not calling `help` for help?
 
-  | command        | arguments                                            | effect                      |
-  | -------------- | ---------------------------------------------------- | --------------------------- |
-  | help/man       |                                                      | help                        |
-  | switch to/goto | board NO                                             | switch to the desired board |
-  | move           | position(e.g. 3D)                                    | place piece at [position]   |
-  | create board   | [mode: reversi/peace] ([column size] [row size])     | create new board            |
-  | list/ls        | ([mode: reversi/peace/current])                      | list the boards.            |
-  |                | you can omit `move` or `create board` or `switch to` | whatever you aim at         |
+  | command        | arguments                                        | effect                      |
+  | -------------- | ------------------------------------------------ | --------------------------- |
+  | help/man       |                                                  | help                        |
+  | switch to/goto | board NO                                         | switch to the desired board |
+  | move           | row-first position (e.g. 3D)                     | place piece at [position]   |
+  | create board   | [mode: reversi/peace] ([column size] [row size]) | create new board            |
+  | list/ls        | ([mode: reversi/peace/current])                  | list the boards.            |
+  |                | you can omit `move` or `switch to`               | whatever you aim at         |
 
 ### Core Design:
 
@@ -81,6 +81,12 @@ Using the MVC structure and interfaces to decouple the view, game and user inter
 
   All painting operations will not change the corresponding views in the same window, that means, they will stay the same while the chosen view is updated.
 
+* **Screen**
+
+  screen is a final paint unit of the whole project.
+
+  All painting operations will finally affect the `Screen` and shown by `Screen`
+
 ### Update Record
 
 #### V2.0.1
@@ -134,3 +140,7 @@ Initialization changed to fit the requirements
 #### V2.4.1
 
 Fixed the bug that Screen won't clear screen
+
+#### V2.4.2
+
+Added score board.

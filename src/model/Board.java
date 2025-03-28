@@ -11,9 +11,8 @@ import view.*;
 public class Board{
     // Answer to the Ultimate Question of Life, the Universe, and Everything
     public static final int ULTIMATE_ANSWER = 42;
-
-    private static final int MAX_BOARD_SIZE = 10;
-    private static final int MIN_BOARD_SIZE = 4;
+    public static final int MAX_BOARD_SIZE = 10;
+    public static final int MIN_BOARD_SIZE = 4;
 
     private final Rule rule;
     private final Piece[][] pieceGrid;
@@ -181,26 +180,50 @@ public class Board{
      */
     private void displayPlayerInfo() {
         int align = (height-2)/2;
-        String buf;
-        buf = "Player[" + whitePlayerName + "] ";
-        if(currentPlayer == Player.WHITE) {
-            buf += ((PixelImplConsole) PieceImplMonochrome.WHITE_PIECE).get();
-        }
-        statisticsView.println(align, buf);
 
-        buf = "Player[" + blackPlayerName + "] ";
-        if(currentPlayer == Player.BLACK) {
-            buf += ((PixelImplConsole) PieceImplMonochrome.BLACK_PIECE).get();
+        {
+            StringBuilder buf = new StringBuilder("Player[" + whitePlayerName + "] ");
+
+            if(currentPlayer == Player.WHITE) {
+                buf.append(((PixelImplConsole) PieceImplMonochrome.WHITE_PIECE).get());
+            } else {
+                buf.append(" ");
+            }
+
+            buf.append(" ");
+
+            {
+                int whiteScore = rule.getGameRule().getWhiteScore(pieceGrid);
+                if(whiteScore != -1) {
+                    buf.append(whiteScore);
+                }
+            }
+
+            statisticsView.println(align, buf.toString());
         }
-        statisticsView.println(align+1, buf);
-        
-        buf = "Current Player: ";
-        if(currentPlayer == Player.WHITE) {
-            buf += "White";
-        } else {
-            buf += "Black";
+
+        {
+            StringBuilder buf = new StringBuilder("Player[" + blackPlayerName + "] ");
+
+            if(currentPlayer == Player.BLACK) {
+                buf.append(((PixelImplConsole) PieceImplMonochrome.BLACK_PIECE).get());
+            } else {
+                buf.append(" ");
+            }
+
+            buf.append(" ");
+
+            {
+                int blackScore = rule.getGameRule().getBlackScore(pieceGrid);
+                if(blackScore != -1) {
+                    buf.append(blackScore);
+                }
+            }
+
+            statisticsView.println(align+1, buf.toString());
         }
-        statisticsView.println(align+2, buf);
+
+        statisticsView.println(align+2, "Current Player: " + currentPlayer.name().toLowerCase());
     }
 
     /**
@@ -223,6 +246,7 @@ public class Board{
                 statisticsView.println(align+1, "Cool");
                 break;
         }
-        statisticsView.println(align+2, "");
+        statisticsView.println(align+2, "White " + rule.getGameRule().getWhiteScore(pieceGrid)
+                + ": Black " + rule.getGameRule().getBlackScore(pieceGrid));
     }
 }

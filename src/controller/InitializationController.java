@@ -9,6 +9,7 @@ import view.Screen;
 
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 public class InitializationController {
     private final Scanner scanner;
@@ -68,6 +69,20 @@ public class InitializationController {
         boardFactory
                 .setBoardSizeCol(boardSize)
                 .setBoardSizeRow(boardSize);
+        if(boardSize < Board.MIN_BOARD_SIZE || boardSize > Board.MAX_BOARD_SIZE) {
+            System.out.println("Invalid board size, using default board size 8x8.");
+            boardFactory
+                    .useDefaultBoardSizeCol()
+                    .useDefaultBoardSizeRow();
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException _) {
+                /* I don't care unless your computer
+                 * ordered a pineapple pizza
+                 * due to this unprocessed exception.
+                 */
+            }
+        }
     }
 
     private void inputBoardCount() {

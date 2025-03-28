@@ -84,6 +84,7 @@ public class GameController {
             return false;
         }
         if(currentBoard <= 0 || currentBoard > boards.size()) {
+            System.out.println("Invalid board number: " + currentBoard);
             return false;
         }
         this.currentBoard = currentBoard - 1;
@@ -114,6 +115,7 @@ public class GameController {
         } else if (tokens[0].compareToIgnoreCase("peace") == 0) {
             boardFactory.setRule(new RuleImplLandfill());
         } else {
+            System.out.println("No rule named " + tokens[0] + ". Try 'reversi' or 'peace'.");
             boardFactory.setRule(null);
         }
         if(tokens.length == 1) {
@@ -133,6 +135,7 @@ public class GameController {
 
     protected boolean createBoard() {
         if(!boardFactory.isLegalSetting()) {
+            System.out.println("Invalid board settings. And, board size must be between " + Board.MIN_BOARD_SIZE + " and " + Board.MAX_BOARD_SIZE);
             return false;
         }
         boards.add(boardFactory.createBoard());
@@ -187,13 +190,15 @@ public class GameController {
      * @return True if the position is valid and the piece is placed successfully
      */
     private boolean placePiece(Move move) {
-        if( boards.get(currentBoard).isGameOver() ) {
-            return false;
-        }
         if( move == null ) {
             return false;
         }
+        if( boards.get(currentBoard).isGameOver() ) {
+            System.out.println("Game Over!");
+            return false;
+        }
         if( !boards.get(currentBoard).placePiece(move) ) {
+            System.out.println("Invalid Move");
             return false;
         }
         showBoard();

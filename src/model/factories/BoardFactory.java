@@ -34,7 +34,9 @@ public class BoardFactory {
         return  !whitePlayerName.isEmpty() &&
                 !blackPlayerName.isEmpty() &&
                 !(rule == null) &&
-                !(screen == null);
+                !(screen == null) &&
+                (Board.MIN_BOARD_SIZE <= boardSizeCol && boardSizeCol <= Board.MAX_BOARD_SIZE) &&
+                (Board.MIN_BOARD_SIZE <= boardSizeRow && boardSizeRow <= Board.MAX_BOARD_SIZE);
     }
 
     public BoardFactory setWhitePlayerName(String whitePlayerName) {
@@ -49,28 +51,28 @@ public class BoardFactory {
 
     public BoardFactory setBoardSizeCol(int boardSizeCol) {
         this.boardSizeCol = boardSizeCol;
-        this.rect.right = this.boardSizeCol*2+Board.ULTIMATE_ANSWER;
+        this.rect.right = this.rect.left + this.boardSizeCol*2+Board.ULTIMATE_ANSWER;
         applyHorizontalAlign();
         return this;
     }
 
     public BoardFactory useDefaultBoardSizeCol() {
         this.boardSizeCol = 8;
-        this.rect.right = this.boardSizeCol*2+Board.ULTIMATE_ANSWER;
+        this.rect.right = this.rect.left + this.boardSizeCol*2+Board.ULTIMATE_ANSWER;
         applyHorizontalAlign();
         return this;
     }
 
     public BoardFactory setBoardSizeRow(int boardSizeRow) {
         this.boardSizeRow = boardSizeRow;
-        this.rect.bottom = this.boardSizeRow+1;
+        this.rect.bottom = this.rect.top + this.boardSizeRow+1;
         applyVerticalAlign();
         return this;
     }
 
     public BoardFactory useDefaultBoardSizeRow() {
         this.boardSizeRow = 8;
-        this.rect.bottom = this.boardSizeRow+1;
+        this.rect.bottom = this.rect.top + this.boardSizeRow+1;
         applyVerticalAlign();
         return this;
     }

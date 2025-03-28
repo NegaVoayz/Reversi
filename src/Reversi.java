@@ -21,7 +21,7 @@ public class Reversi{
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         ArrayList<Board> boards = new ArrayList<>();
-        Screen screen = new ScreenImplConsole(10, 120);
+        Screen screen = new ScreenImplConsole(12, 120);
 
         InitializationController initializationController = new InitializationController(scanner, boards, screen);
         initializationController.initialize();
@@ -30,13 +30,14 @@ public class Reversi{
         InputController inputController = new InputController(scanner, gameController);
         SettlementController settlementController = new SettlementController(gameController,screen);
 
+        System.out.println("Welcome, players. Try 'help' for command instructions.");
         while(!gameController.isAllGameOver()) {
             boolean isValidMove = inputController
                     .readCommand()
                     .parseCommand()
                     .executeCommand();
             if( !isValidMove ) {
-                System.out.println("oOps! invalid move");
+                System.out.println("oOps! invalid operation. Try input 'help' for help.");
             }
         }
 

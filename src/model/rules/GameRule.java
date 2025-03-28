@@ -17,4 +17,8 @@ public interface GameRule {
     boolean gameOverCheck(Player currentPlayer, Piece[][] pieceGrid);
 
     Player gameWonCheck(Player currentPlayer, Piece[][] pieceGrid);
+
+    int getWhiteScore(Piece[][] pieceGrid);
+
+    int getBlackScore(Piece[][] pieceGrid);
 }

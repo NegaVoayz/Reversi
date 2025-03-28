@@ -81,4 +81,14 @@ public class GameRuleImplLandfill implements GameRule {
     public Player gameWonCheck(Player currentPlayer, Piece[][] pieceGrid) {
         return Player.NONE;
     }
+
+    @Override
+    public int getWhiteScore(Piece[][] pieceGrid) {
+        return -1;
+    }
+
+    @Override
+    public int getBlackScore(Piece[][] pieceGrid) {
+        return -1;
+    }
 }

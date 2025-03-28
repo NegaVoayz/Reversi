@@ -88,19 +88,8 @@ public class GameRuleImplReversi implements GameRule {
 
     @Override
     public Player gameWonCheck(Player currentPlayer, Piece[][] pieceGrid) {
-        int whiteCount = 0;
-        int blackCount = 0;
-        for(Piece[] pieces : pieceGrid) {
-            for(Piece piece : pieces) {
-                if(piece.getPlayer() == Player.WHITE) {
-                    whiteCount++;
-                } else {
-                    if(piece.getPlayer() == Player.BLACK) {
-                        blackCount++;
-                    }
-                }
-            }
-        }
+        int whiteCount = getWhiteScore(pieceGrid);
+        int blackCount = getBlackScore(pieceGrid);
 
         if(whiteCount > blackCount) {
             return Player.WHITE;
@@ -109,6 +98,32 @@ public class GameRuleImplReversi implements GameRule {
             return Player.BLACK;
         }
         return Player.NONE;
+    }
+
+    @Override
+    public int getWhiteScore(Piece[][] pieceGrid) {
+        int whiteCount = 0;
+        for(Piece[] pieces : pieceGrid) {
+            for(Piece piece : pieces) {
+                if(piece.getPlayer() == Player.WHITE) {
+                    whiteCount++;
+                }
+            }
+        }
+        return whiteCount;
+    }
+
+    @Override
+    public int getBlackScore(Piece[][] pieceGrid) {
+        int blackCount = 0;
+        for(Piece[] pieces : pieceGrid) {
+            for(Piece piece : pieces) {
+                if(piece.getPlayer() == Player.BLACK) {
+                    blackCount++;
+                }
+            }
+        }
+        return blackCount;
     }
 
     /**
