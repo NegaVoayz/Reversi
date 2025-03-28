@@ -69,6 +69,7 @@ public class ScreenImplConsole implements Screen {
 
     @Override
     public boolean forcePaint() {
+        Screen.clear();
         for(int i = rect.top; i < rect.bottom; i++) {
             for(int j = rect.left; j < rect.right; j++) {
                 buffer[i][j].paint();

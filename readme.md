@@ -1,4 +1,4 @@
-# Reversi Project 2.4.0
+# Reversi Project 2.4.1
 
 ## Class & Function Document
 
@@ -130,3 +130,7 @@ Added align mode setter.
 Added short version command.
 
 Initialization changed to fit the requirements
+
+#### V2.4.1
+
+Fixed the bug that Screen won't clear screen
