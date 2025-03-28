@@ -1,4 +1,4 @@
-# Reversi Project 2.4.2
+# Reversi Project 2.4.3
 
 ## Class & Function Document
 
@@ -19,6 +19,7 @@
   | command        | arguments                                        | effect                      |
   | -------------- | ------------------------------------------------ | --------------------------- |
   | help/man       |                                                  | help                        |
+  | quit           |                                                  | quit                        |
   | switch to/goto | board NO                                         | switch to the desired board |
   | move           | row-first position (e.g. 3D)                     | place piece at [position]   |
   | create board   | [mode: reversi/peace] ([column size] [row size]) | create new board            |
@@ -144,3 +145,7 @@ Fixed the bug that Screen won't clear screen
 #### V2.4.2
 
 Added score board.
+
+#### V2.4.3
+
+Added command quit.
