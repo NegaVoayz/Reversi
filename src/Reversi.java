@@ -8,6 +8,8 @@ import controller.InitializationController;
 import controller.InputController;
 import controller.SettlementController;
 import model.Board;
+import view.Screen;
+import view.ScreenImplConsole;
 
 public class Reversi{
 
@@ -19,13 +21,14 @@ public class Reversi{
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         ArrayList<Board> boards = new ArrayList<>();
+        Screen screen = new ScreenImplConsole(10, 120);
 
-        InitializationController initializationController = new InitializationController(scanner, boards);
+        InitializationController initializationController = new InitializationController(scanner, boards, screen);
         initializationController.initialize();
 
-        GameController gameController = new GameController(boards);
+        GameController gameController = new GameController(boards, screen);
         InputController inputController = new InputController(scanner, gameController);
-        SettlementController settlementController = new SettlementController(gameController);
+        SettlementController settlementController = new SettlementController(gameController,screen);
 
         while(!gameController.isAllGameOver()) {
             boolean isValidMove = inputController

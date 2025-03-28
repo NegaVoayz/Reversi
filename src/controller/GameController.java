@@ -2,13 +2,14 @@ package controller;
 
 import model.Board;
 import model.factories.BoardFactory;
-import model.rules.InputRule;
-import model.rules.Rule;
 import model.rules.RuleImplLandfill;
 import model.rules.RuleImplReversi;
 import model.structs.Move;
-import model.structs.Point;
 import model.enums.Player;
+import model.structs.Rect;
+import view.Screen;
+import view.View;
+import view.Window;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -23,8 +24,10 @@ public class GameController {
     private int whiteWinCount;
     private int blackWinCount;
     private final BoardFactory boardFactory;
+    private final Window boardsWindow;
+    private final View boardsView;
 
-    public GameController(ArrayList<Board> boards) {
+    public GameController(ArrayList<Board> boards, Screen screen) {
         this.boards = boards;
         this.gameOverCount = 0;
         this.currentBoard  = 0;
@@ -33,17 +36,24 @@ public class GameController {
         this.whitePlayerName = boards.getFirst().getWhitePlayerName();
         this.blackPlayerName = boards.getFirst().getBlackPlayerName();
         this.boardsSelected = new LinkedList<>();
+        this.boardsWindow = screen.createWindow(new Rect(0, 10, 80, 120));
+        this.boardsView = boardsWindow.createView(new Rect(0, 10, 0, 32));
         boardFactory = BoardFactory
                 .create()
                 .setWhitePlayerName(whitePlayerName)
                 .setBlackPlayerName(blackPlayerName)
+                .setScreen(screen)
                 .useDefaultBoardSizeCol()
-                .useDefaultBoardSizeRow();
-        boards.getFirst().show();
+                .useDefaultBoardSizeRow()
+                .useDefaultVerticalAlign()
+                .useDefaultHorizontalAlign();
+        setBoardsWindow();
+        showBoard();
     }
 
     public void showBoard() {
         boards.get(currentBoard).show();
+        boardsView.paint();
     }
 
     public boolean isAllGameOver() {
@@ -66,11 +76,18 @@ public class GameController {
         return blackPlayerName;
     }
 
-    protected boolean setCurrentBoard(int currentBoard) {
+    protected boolean setCurrentBoard(String input) {
+        int currentBoard;
+        try {
+            currentBoard = Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            return false;
+        }
         if(currentBoard <= 0 || currentBoard > boards.size()) {
             return false;
         }
         this.currentBoard = currentBoard - 1;
+        setBoardsWindow();
         showBoard();
         return true;
     }
@@ -94,10 +111,18 @@ public class GameController {
         tokens[0] = tokens[0].toLowerCase();
         if(tokens[0].compareToIgnoreCase("reversi") == 0) {
             boardFactory.setRule(new RuleImplReversi());
-        } else {
+        } else if (tokens[0].compareToIgnoreCase("peace") == 0) {
             boardFactory.setRule(new RuleImplLandfill());
+        } else {
+            boardFactory.setRule(null);
         }
         if(tokens.length == 1) {
+            return this;
+        }
+        if(tokens.length == 2) {
+            boardFactory
+                .setBoardSizeCol(Integer.parseInt(tokens[1]))
+                .setBoardSizeRow(Integer.parseInt(tokens[1]));
             return this;
         }
         boardFactory
@@ -107,6 +132,9 @@ public class GameController {
     }
 
     protected boolean createBoard() {
+        if(!boardFactory.isLegalSetting()) {
+            return false;
+        }
         boards.add(boardFactory.createBoard());
         return this.selectBoards("").listBoards();
     }
@@ -135,7 +163,7 @@ public class GameController {
         }
         do {
             int i = boardsSelected.poll();
-            System.out.println("Board " + (i + 1) + ": " + boards.get(i).getRuleName());
+            System.out.println("Board " + (i + 1) + ": " + boards.get(i));
         } while (!boardsSelected.isEmpty());
         return true;
     }
@@ -149,7 +177,7 @@ public class GameController {
     private void selectBoardsByRuleName(String ruleName) {
         for(int i = boardsSelected.size(); i > 0; i--) {
             int tempBoardNO = boardsSelected.poll();
-            if(boards.get(tempBoardNO).getRuleName().equals(ruleName)) {
+            if(boards.get(tempBoardNO).getRule().toString().equals(ruleName)) {
                 boardsSelected.add(tempBoardNO);
             }
         }
@@ -160,6 +188,9 @@ public class GameController {
      */
     private boolean placePiece(Move move) {
         if( boards.get(currentBoard).isGameOver() ) {
+            return false;
+        }
+        if( move == null ) {
             return false;
         }
         if( !boards.get(currentBoard).placePiece(move) ) {
@@ -175,5 +206,28 @@ public class GameController {
             gameOverCount++;
         }
         return true;
+    }
+
+    private void setBoardsWindow() {
+        int startY = 1;
+        int startBoard = currentBoard-3;
+        if(startBoard < 0) {
+            startY = 1-startBoard;
+            startBoard = 0;
+        }
+        boardsView.clearView();
+        if(currentBoard-3 > 0) {
+            boardsView.println(0,"    ...");
+        }
+        if(currentBoard+5 < boards.size()) {
+            boardsView.println(9,"    ...");
+        }
+        for(int i = startY, j = startBoard; i < 9 && j < boards.size(); i++, j++) {
+            if(j == currentBoard) {
+                boardsView.println(i, "--> Board " + (j + 1) + ": " + boards.get(j).getBriefInformation());
+            } else {
+                boardsView.println(i, "    Board " + (j + 1) + ": " + boards.get(j).getBriefInformation());
+            }
+        }
     }
 }

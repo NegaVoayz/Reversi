@@ -1,8 +1,8 @@
 package model.rules;
 
 public class RuleImplReversi implements Rule {
-    static final InputRule inputRule = new InputRuleImplMonochrome();
-    static final GameRule gameRule = new GameRuleImplReversi();
+    final InputRule inputRule = new InputRuleImplMonochrome();
+    final GameRule gameRule = new GameRuleImplReversi();
 
     @Override
     public GameRule getGameRule() {
@@ -15,7 +15,7 @@ public class RuleImplReversi implements Rule {
     }
 
     @Override
-    public String getRuleName() {
+    public String toString() {
         return "reversi";
     }
 }

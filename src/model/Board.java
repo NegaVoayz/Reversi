@@ -12,8 +12,8 @@ public class Board{
     // Answer to the Ultimate Question of Life, the Universe, and Everything
     public static final int ULTIMATE_ANSWER = 42;
 
-    private static final int MAX_BOARD_SIZE = 16;
-    private static final int DEFAULT_BOARD_SIZE = 8;
+    private static final int MAX_BOARD_SIZE = 10;
+    private static final int MIN_BOARD_SIZE = 4;
 
     private final Rule rule;
     private final Piece[][] pieceGrid;
@@ -34,8 +34,8 @@ public class Board{
             Window window,
             String whitePlayerName,
             String blackPlayerName) {
-        if(height < 3 || height > MAX_BOARD_SIZE ||
-            width < 3 || width > MAX_BOARD_SIZE ) {
+        if(height < MIN_BOARD_SIZE || height > MAX_BOARD_SIZE ||
+            width < MIN_BOARD_SIZE || width > MAX_BOARD_SIZE ) {
             throw new IllegalArgumentException("Invalid board size: too large or too small");
         }
         this.height = height;
@@ -60,8 +60,12 @@ public class Board{
         showValidMoves();
     }
 
-    public String getRuleName() {
-        return rule.getRuleName();
+    public String getBriefInformation() {
+        return rule + " " + height + "x" + width;
+    }
+
+    public Rule getRule() {
+        return rule;
     }
 
     public String getWhitePlayerName() {
@@ -73,6 +77,15 @@ public class Board{
 
     public InputRule getInputRule() {
         return rule.getInputRule();
+    }
+
+    public String toString() {
+        return rule + " " + height + "x" + width + " " + switch(winner) {
+            case null -> "ongoing";
+            case NONE -> "draw";
+            case BLACK -> "black win";
+            case WHITE -> "white win";
+        };
     }
 
     public boolean isGameOver() {
@@ -126,10 +139,9 @@ public class Board{
 
     /**
      * show the board on the screen
-     * @return true if succeed
      */
-    public boolean show() {
-        return window.forcePaint();
+    public void show() {
+        window.paint();
     }
 
     /**

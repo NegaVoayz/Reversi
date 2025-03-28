@@ -6,11 +6,9 @@ import model.structs.Rect;
 public interface View {
     boolean move(Rect rect);
 
-    public int setPixel(Point position, Pixel pix);
-    public int print(Point position, String str);
-    public int println(int y, String str);
-    public boolean paint();
-    public boolean forcePaint();
-
-    boolean clearView();
+    int setPixel(Point position, Pixel pix);
+    int print(Point position, String str);
+    int println(int y, String str);
+    void paint();
+    void clearView();
 }

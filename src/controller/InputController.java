@@ -1,8 +1,8 @@
 package controller;
 
-import model.rules.InputRule;
-import model.structs.Point;
-
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Scanner;
 
 public class InputController {
@@ -49,56 +49,62 @@ public class InputController {
      * @return self for chain calling
      */
     public InputController parseCommand() {
-        String[] tokens = command.content.split("\\s+");
-        switch (tokens[0]) {
+        Queue<String> tokens = new LinkedList<>(Arrays.stream(command.content.split("\\s+")).toList());
+        switch (tokens.poll()) {
             case "help":
             case "man":
                 this.command.type = CommandType.HELP;
                 break;
             case "switch":
-                if(tokens.length == 3 && tokens[1].equals("to")) {
-                    command.type = CommandType.CHANGE_BOARD;
-                    command.content = tokens[2];
+                if(tokens.size() != 2 || !tokens.poll().equals("to")) {
+                    command.type = CommandType.NONE;
                     break;
                 }
-                command.type = CommandType.NONE;
+                /*fallthrough*/
+            case "goto":
+                command.type = CommandType.CHANGE_BOARD;
+                command.content = tokens.poll();
                 break;
             case "move":
-                if(tokens.length == 2) {
+                if(tokens.size() == 1) {
                     command.type = CommandType.PLACE_PIECE;
-                    command.content = tokens[1];
+                    command.content = tokens.poll();
                     break;
                 }
                 command.type = CommandType.NONE;
                 break;
             case "create":
-                if(tokens.length >= 3 && tokens.length <= 5 && tokens[1].equals("board")) {
+                if(tokens.size() >= 2 && tokens.size() <= 4 && tokens.poll().equals("board")) {
                     command.type = CommandType.CREATE_BOARD;
-                    if(tokens.length == 4) {
-                        command.content = tokens[2]+" "+tokens[3]+" "+tokens[3];
-                    } else if(tokens.length == 5) {
-                        command.content = tokens[2]+" "+tokens[3]+" "+tokens[4];
-                    } else {
-                        command.content = tokens[2];
+                    StringBuilder tempString = new StringBuilder();
+                    while(!tokens.isEmpty()) {
+                        tempString.append(tokens.poll()).append(" ");
                     }
+                    command.content = tempString.toString();
                     break;
                 }
                 command.type = CommandType.NONE;
                 break;
             case "list":
-                if(tokens.length == 2) {
+            case "ls":
+                if(tokens.size() == 1) {
                     command.type = CommandType.LIST_BOARDS;
-                    command.content = tokens[1];
+                    command.content = tokens.poll();
                     break;
-                } else if(tokens.length == 1) {
+                } else if(tokens.isEmpty()) {
                     command.type = CommandType.LIST_BOARDS;
                     command.content = "";
                     break;
                 }
                 command.type = CommandType.NONE;
                 break;
+            case null:
+                command.type = CommandType.NONE;
+                command.content = "";
+                break;
             default:
                 command.type = CommandType.NONE;
+
                 break;
         }
         return this;
@@ -106,9 +112,11 @@ public class InputController {
 
     public boolean executeCommand() {
         return switch (command.type) {
-            case NONE -> false;
+            case NONE -> gameController.parseMove(command.content).placePiece()
+                      || gameController.setCurrentBoard(command.content)
+                      || gameController.parseCreate(command.content).createBoard();
             case HELP -> showHelp();
-            case CHANGE_BOARD -> gameController.setCurrentBoard(Integer.parseInt(command.content));
+            case CHANGE_BOARD -> gameController.setCurrentBoard(command.content);
             case CREATE_BOARD -> gameController.parseCreate(command.content).createBoard();
             case LIST_BOARDS  -> gameController.selectBoards(command.content).listBoards();
             case PLACE_PIECE  -> gameController.parseMove(command.content).placePiece();
@@ -117,12 +125,14 @@ public class InputController {
 
     private static boolean showHelp() {
         System.out.println("Command Manual:");
-        System.out.println("| command      | arguments                                        | effect                      |");
-        System.out.println("| help/man     |                                                  | help                        |");
-        System.out.println("| switch to    | board NO                                         | switch to the desired board |");
-        System.out.println("| move         | position(e.g. 3D)                                | place piece at [position]   |");
-        System.out.println("| create board | [mode: reversi/peace] ([column size] [row size]) | create new board            |");
-        System.out.println("| list         | ([mode: reversi/peace/current])                  | list the boards.            |");
+        System.out.println("| command        | arguments                                            | effect                      |");
+        System.out.println("|----------------|------------------------------------------------------|-----------------------------|");
+        System.out.println("| help/man       |                                                      | help                        |");
+        System.out.println("| switch to/goto | board NO                                             | switch to the desired board |");
+        System.out.println("| move           | position(e.g. 3D)                                    | place piece at [position]   |");
+        System.out.println("| create board   | [mode: reversi/peace] ([column size] [row size])     | create new board            |");
+        System.out.println("| list/ls        | ([mode: reversi/peace/current])                      | list the boards.            |");
+        System.out.println("|                | you can omit `move` or `create board` or `switch to` | whatever you aim at         |");
         return true;
     }
 }

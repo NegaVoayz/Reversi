@@ -7,16 +7,18 @@ public class WindowImplConsole implements Window {
     private final Pixel[][] buffer;
     private final boolean[][] occupied;
     private final Rect rect;
+    private final Screen screen;
     private int dirty;
 
-    public WindowImplConsole(int height, int width) {
-        dirty = 0;
-        this.rect = new Rect(0, height, 0, width);
-        buffer = new Pixel[rect.bottom][rect.right];
-        occupied = new boolean[rect.bottom][rect.right];
+    protected WindowImplConsole(Rect rect, Screen screen) {
+        this.buffer = new Pixel[rect.bottom-rect.top][rect.right-rect.left];
+        this.occupied = new boolean[rect.bottom-rect.top][rect.right-rect.left];
+        this.rect = rect;
+        this.screen = screen;
+        this.dirty = 0;
 
-        for(int i = rect.top; i < rect.bottom; i++) {
-            for(int j = rect.left; j < rect.right; j++) {
+        for(int i = 0; i < rect.bottom - rect.top; i++) {
+            for(int j = 0; j < rect.right - rect.left; j++) {
                 buffer[i][j] = new PixelImplConsole();
                 occupied[i][j] = false;
             }
@@ -26,7 +28,7 @@ public class WindowImplConsole implements Window {
     /**
      * set pixel on screen
      * set dirty to true if really changed
-     * 
+     *
      * @param position pixel position
      * @param pix the pixel 'color'
      * @return dirty since we don't care one pixel but the whole screen
@@ -57,10 +59,10 @@ public class WindowImplConsole implements Window {
     @Override
     public boolean allocateView(Rect expectedRect) {
 
-        if( expectedRect.left < rect.left ||
-            expectedRect.right > rect.right ||
-            expectedRect.top < rect.top ||
-            expectedRect.bottom > rect.bottom ) {
+        if( expectedRect.left < 0 ||
+            expectedRect.right > rect.right - rect.left ||
+            expectedRect.top < 0 ||
+            expectedRect.bottom > rect.bottom - rect.top ) {
             return false;
         }
         // check
@@ -84,67 +86,48 @@ public class WindowImplConsole implements Window {
 
     /**
      * free canvas area
-     * 
-     * @param previousRect the previous rect of an canvas
-     * @return true if succeeded
+     *
+     * @param previousRect the previous rect of a canvas
      */
     @Override
-    public boolean freeView(Rect previousRect) {
-
+    public void freeView(Rect previousRect) {
         for(int i = previousRect.top; i < previousRect.bottom; i++) {
             for(int j = previousRect.left; j < previousRect.right; j++) {
                 occupied[i][j] = false;
             }
         }
-
-        return true;
     }
 
     /**
      * display the screen, force refresh by default
-     * @return true when repainted
      */
     @Override
-    public boolean forcePaint() {
-        Window.clear();
-        for(int i = rect.top; i < rect.bottom; i++) {
-            for(int j = rect.left; j < rect.right; j++) {
-                buffer[i][j].paint();
-                buffer[i][j].flush();
-            }
-            System.out.print('\n');
+    public void paint() {
+        if(!(screen instanceof ScreenImplConsole screenImplConsole)) {
+            throw new IllegalStateException("Screen is not a ScreenImplConsole");
         }
-        dirty = 0;
-        return true;
-    }
-    
-    /**
-     * display the screen
-     * refuse to work if not forced and no change
-     *
-     * @return true when repainted
-     */
-    @Override
-    public boolean paint() {
-        if(dirty == 0)
-            return false;
-        return forcePaint();
+        Point position = new Point();
+        for(position.y = rect.top; position.y < rect.bottom; position.y++) {
+            for(position.x = rect.left; position.x < rect.right; position.x++) {
+                screenImplConsole.setPixel(position, buffer[position.y-rect.top][position.x-rect.left]);
+            }
+        }
+        screen.paint();
     }
 
 
     /**
      * clear the screen buffer
-     * @return 0 if empty before
      */
     @Override
-    public int clearWindowBuffer(){
+    public void clearWindowBuffer(){
         Pixel pix = new PixelImplConsole();
         Point point = new Point(0,0);
         for(point.y = rect.top; point.y < rect.bottom; point.y++) {
             for(point.x = rect.left; point.x < rect.right; point.x++) {
-                dirty += setPixel(point, pix);
+                setPixel(point, pix);
             }
         }
-        return dirty;
+        paint();
     }
 }

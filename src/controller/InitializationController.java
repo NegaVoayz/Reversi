@@ -3,11 +3,9 @@ package controller;
 import model.Board;
 import model.enums.Player;
 import model.factories.BoardFactory;
-import model.rules.Rule;
 import model.rules.RuleImplLandfill;
 import model.rules.RuleImplReversi;
-import view.Window;
-import view.WindowImplConsole;
+import view.Screen;
 
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -18,22 +16,30 @@ public class InitializationController {
     private final BoardFactory boardFactory;
     private int boardNumber;
 
-    public InitializationController(Scanner scanner, ArrayList<Board> boards) {
+    public InitializationController(Scanner scanner, ArrayList<Board> boards, Screen screen) {
         this.scanner = scanner;
         this.boards = boards;
-        this.boardFactory = BoardFactory.create();
+        this.boardFactory = BoardFactory
+                .create()
+                .setScreen(screen)
+                .useDefaultVerticalAlign()
+                .useDefaultHorizontalAlign();
     }
 
     public void initialize() {
-        initialize(new RuleImplReversi());
+//        inputBoardRule();
+//        inputBoardCount();
+        inputBoardSize();
+        inputPlayerNames();
+        useDefaultBoardSets();
+//        initializeBoards();
     }
 
-    public void initialize(Rule rule) {
-        inputBoardRule();
-        inputBoardSize();
-        inputBoardCount();
-        inputPlayerNames();
-        initializeBoards();
+    private void useDefaultBoardSets() {
+        boardFactory.setRule(new RuleImplReversi());
+        boards.add(boardFactory.createBoard());
+        boardFactory.setRule(new RuleImplLandfill());
+        boards.add(boardFactory.createBoard());
     }
 
     private void initializeBoards() {
@@ -77,7 +83,7 @@ public class InitializationController {
      * @return The name of the player.
      */
     private String getName(Player player) {
-        Window.clear();
+        Screen.clear();
         if(player == Player.WHITE) {
             System.out.println("[You Play White]");
         } else {

@@ -8,7 +8,7 @@ public class ViewImplConsole implements View {
     private Rect rect;
     private int dirty;
 
-    public ViewImplConsole(Rect rect, Window window) {
+    protected ViewImplConsole(Rect rect, Window window) {
         dirty = 0;
         this.rect = rect;
         this.window= window;
@@ -91,43 +91,24 @@ public class ViewImplConsole implements View {
     }
 
     /**
-     * show the canvas, force refresh by default
-     * 
-     * @return true when repainted
-     */
-    @Override
-    public boolean forcePaint() {
-        return window.forcePaint();
-    }
-    
-    /**
      * show the canvas
-     * refuse to work if not forced and no change
-     *
-     * @return true when repainted
      */
     @Override
-    public boolean paint() {
-        if(dirty == 0)
-            return false;
+    public void paint() {
         window.paint();
-        dirty = 0;
-        return true;
     }
 
     /**
      * clear the canvas
-     * 
-     * @return dirty since we don't care one pixel but the whole canvas
      */
     @Override
-    public boolean clearView(){
+    public void clearView(){
         Pixel pix = new PixelImplConsole();
         for(int y = rect.top; y < rect.bottom; y++) {
             for(int x = rect.left; x < rect.right; x++) {
                 dirty |= window.setPixel(new Point(x, y), pix);
             }
         }
-        return paint();
+        paint();
     }
 }

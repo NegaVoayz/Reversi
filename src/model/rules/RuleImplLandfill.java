@@ -1,8 +1,8 @@
 package model.rules;
 
 public class RuleImplLandfill implements Rule {
-    static final InputRule inputRule = new InputRuleImplMonochrome();
-    static final GameRule gameRule = new GameRuleImplLandfill();
+    final InputRule inputRule = new InputRuleImplMonochrome();
+    final GameRule gameRule = new GameRuleImplLandfill();
 
     @Override
     public GameRule getGameRule() {
@@ -15,7 +15,7 @@ public class RuleImplLandfill implements Rule {
     }
 
     @Override
-    public String getRuleName() {
+    public String toString() {
         return "peace";
     }
 }

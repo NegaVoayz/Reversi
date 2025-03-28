@@ -6,9 +6,11 @@ import view.*;
 
 public class SettlementController {
     private final GameController gameController;
+    private final Screen screen;
 
-    public SettlementController(final GameController gameController) {
+    public SettlementController(final GameController gameController, final Screen screen) {
         this.gameController = gameController;
+        this.screen = screen;
     }
 
     public void announceResult() {
@@ -18,8 +20,8 @@ public class SettlementController {
         String whitePlayerName = gameController.getWhitePlayerName();
         String blackPlayerName = gameController.getBlackPlayerName();
 
-        Window window = new WindowImplConsole(3, Board.ULTIMATE_ANSWER);
-        View view = new ViewImplConsole(new Rect(0, 3, 0, Board.ULTIMATE_ANSWER), window);
+        Window window = screen.createWindow(new Rect(0,3,0, Board.ULTIMATE_ANSWER));
+        View view = window.createView(new Rect(0, 3, 0, Board.ULTIMATE_ANSWER));
         if(whiteWinCount > blackWinCount) {
             view.println(0, "White Wins");
             view.println(1, "Good game " + whitePlayerName);
@@ -31,6 +33,6 @@ public class SettlementController {
             view.println(1, "Cool");
         }
         view.println(2, "Score: "+whiteWinCount+" : "+blackWinCount);
-        window.forcePaint();
+        window.paint();
     }
 }

@@ -1,4 +1,4 @@
-# Reversi Project 2.3.1
+# Reversi Project 2.4.0
 
 ## Class & Function Document
 
@@ -16,13 +16,14 @@
 
   Why not calling `help` for help?
 
-  | command      | arguments                                        | effect                      |
-  | ------------ | ------------------------------------------------ | --------------------------- |
-  | help/man     |                                                  | help                        |
-  | switch to    | board NO                                         | switch to the desired board |
-  | move         | position(e.g. 3D)                                | place piece at [position]   |
-  | create board | [mode: reversi/peace] ([column size] [row size]) | create new board            |
-  | list         | ([mode: reversi/peace/current])                  | list the boards.            |
+  | command        | arguments                                            | effect                      |
+  | -------------- | ---------------------------------------------------- | --------------------------- |
+  | help/man       |                                                      | help                        |
+  | switch to/goto | board NO                                             | switch to the desired board |
+  | move           | position(e.g. 3D)                                    | place piece at [position]   |
+  | create board   | [mode: reversi/peace] ([column size] [row size])     | create new board            |
+  | list/ls        | ([mode: reversi/peace/current])                      | list the boards.            |
+  |                | you can omit `move` or `create board` or `switch to` | whatever you aim at         |
 
 ### Core Design:
 
@@ -56,7 +57,7 @@ Using the MVC structure and interfaces to decouple the view, game and user inter
 
 * **Pieces**
 
-​	Piece is changed to a interface to fit more chess games, perhaps.
+	Piece is changed to an interface to fit more chess games, perhaps.
 
 * **Board**
 
@@ -119,3 +120,13 @@ Use command-based input style.
 #### V2.3.1
 
 Fixed the bug that all draw matches will be taken as black win.
+
+#### V2.4.0
+
+Added game list on the right.
+
+Added align mode setter.
+
+Added short version command.
+
+Initialization changed to fit the requirements
