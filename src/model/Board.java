@@ -60,7 +60,7 @@ public class Board{
     }
 
     public String getBriefInformation() {
-        return rule + " " + height + "x" + width;
+        return rule.getName() + " " + height + "x" + width;
     }
 
     public Rule getRule() {

@@ -14,8 +14,7 @@ public class RuleImplReversi implements Rule {
         return inputRule;
     }
 
+    public static final String name = "reversi";
     @Override
-    public String toString() {
-        return "reversi";
-    }
+    public String getName() { return name; }
 }

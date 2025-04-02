@@ -138,15 +138,15 @@ public class InputController {
 
     private static boolean showHelp() {
         System.out.println("Command Manual:");
-        System.out.println("| command        | arguments                                        | effect                      |");
-        System.out.println("|----------------|--------------------------------------------------|-----------------------------|");
-        System.out.println("| help/man       |                                                  | help                        |");
-        System.out.println("| quit           |                                                  | quit                        |");
-        System.out.println("| switch to/goto | board NO                                         | switch to the desired board |");
-        System.out.println("| move           | row-first position (e.g. 3D)                     | place piece at [position]   |");
-        System.out.println("| create board   | [mode: reversi/peace] ([column size] [row size]) | create new board            |");
-        System.out.println("| list/ls        | ([mode: reversi/peace/current])                  | list the boards.            |");
-        System.out.println("|                | you can omit `move` or `switch to`               | whatever you aim at         |");
+        System.out.println("| command        | arguments                              | effect                      |");
+        System.out.println("|----------------|----------------------------------------|-----------------------------|");
+        System.out.println("| help/man       |                                        | help                        |");
+        System.out.println("| quit           |                                        | quit                        |");
+        System.out.println("| switch to/goto | board NO                               | switch to the desired board |");
+        System.out.println("| move           | row-first position (e.g. 3D)           | place piece at [position]   |");
+        System.out.println("| create board   | [game mode] ([column size] [row size]) | create new board            |");
+        System.out.println("| list/ls        | ([mode: game mode/current])            | list the boards.            |");
+        System.out.println("|                | you can omit `move` or `switch to`     | whatever you aim at         |");
         return true;
     }
 }

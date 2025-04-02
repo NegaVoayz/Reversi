@@ -2,6 +2,7 @@ package controller;
 
 import model.Board;
 import model.factories.BoardFactory;
+import model.rules.RuleImplGomoku;
 import model.rules.RuleImplLandfill;
 import model.rules.RuleImplReversi;
 import model.structs.Move;
@@ -109,14 +110,19 @@ public class GameController {
 
     protected GameController parseCreate(String input) {
         String[] tokens = input.split("\\s+");
-        tokens[0] = tokens[0].toLowerCase();
-        if(tokens[0].compareToIgnoreCase("reversi") == 0) {
-            boardFactory.setRule(new RuleImplReversi());
-        } else if (tokens[0].compareToIgnoreCase("peace") == 0) {
-            boardFactory.setRule(new RuleImplLandfill());
-        } else {
-            System.out.println("No rule named " + tokens[0] + ". Try 'reversi' or 'peace'.");
-            boardFactory.setRule(null);
+        switch(tokens[0].toLowerCase()) {
+            case RuleImplReversi.name:
+                boardFactory.setRule(new RuleImplReversi());
+                break;
+            case RuleImplLandfill.name:
+                boardFactory.setRule(new RuleImplLandfill());
+                break;
+            case RuleImplGomoku.name:
+                boardFactory.setRule(new RuleImplGomoku());
+                break;
+            default:
+                System.out.println("No rule named " + tokens[0] + ". Try 'reversi' or 'peace'.");
+                boardFactory.setRule(null);
         }
         if(tokens.length == 1) {
             return this;

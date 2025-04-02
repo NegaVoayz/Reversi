@@ -6,7 +6,7 @@ import model.structs.Move;
 import model.structs.Point;
 import model.enums.Player;
 
-public class GameRuleImplReversi implements GameRule {
+public class GameRuleImplReversi extends GameRuleImplMonochrome {
     private final static Point[] DIRECTIONS = {
             new Point(1,1),  new Point(1,0),  new Point(1,-1),
             new Point(0,1),                         new Point(0,-1),
@@ -18,11 +18,7 @@ public class GameRuleImplReversi implements GameRule {
      */
     @Override
     public void initializeGrid(Piece[][] pieceGrid) {
-        for(int i = 0; i < pieceGrid.length; i++) {
-            for(int j = 0; j < pieceGrid[0].length; j++) {
-                pieceGrid[i][j] = new PieceImplMonochrome();
-            }
-        }
+        basicInitializeGrid(pieceGrid);
 
         pieceGrid[pieceGrid.length/2-1][pieceGrid[0].length/2-1].setPlayer(Player.WHITE);
         pieceGrid[pieceGrid.length/2-1][pieceGrid[0].length/2].setPlayer(Player.BLACK);

@@ -3,6 +3,7 @@ package controller;
 import model.Board;
 import model.enums.Player;
 import model.factories.BoardFactory;
+import model.rules.RuleImplGomoku;
 import model.rules.RuleImplLandfill;
 import model.rules.RuleImplReversi;
 import view.Screen;
@@ -40,6 +41,8 @@ public class InitializationController {
         boardFactory.setRule(new RuleImplReversi());
         boards.add(boardFactory.createBoard());
         boardFactory.setRule(new RuleImplLandfill());
+        boards.add(boardFactory.createBoard());
+        boardFactory.setRule(new RuleImplGomoku());
         boards.add(boardFactory.createBoard());
     }
 

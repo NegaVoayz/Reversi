@@ -6,18 +6,14 @@ import model.structs.Move;
 import model.structs.Point;
 import model.enums.Player;
 
-public class GameRuleImplLandfill implements GameRule {
+public class GameRuleImplLandfill extends GameRuleImplGomoku {
 
     /**
      * allocate pieceGrid and set the start pieces
      */
     @Override
     public void initializeGrid(Piece[][] pieceGrid) {
-        for(int i = 0; i < pieceGrid.length; i++) {
-            for(int j = 0; j < pieceGrid[0].length; j++) {
-                pieceGrid[i][j] = new PieceImplMonochrome();
-            }
-        }
+        basicInitializeGrid(pieceGrid);
 
         pieceGrid[pieceGrid.length/2-1][pieceGrid[0].length/2-1].setPlayer(Player.WHITE);
         pieceGrid[pieceGrid.length/2-1][pieceGrid[0].length/2].setPlayer(Player.BLACK);
