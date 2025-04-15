@@ -17,4 +17,8 @@ public class RuleImplGomoku implements Rule {
     public static final String name ="gomoku";
     @Override
     public String getName() { return name; }
+
+    private static final boolean showRound = true;
+    @Override
+    public boolean showRound() { return showRound; }
 }

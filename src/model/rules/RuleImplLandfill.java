@@ -17,4 +17,8 @@ public class RuleImplLandfill implements Rule {
     public static final String name = "peace";
     @Override
     public String getName() { return name; }
+
+    private static final boolean showRound = false;
+    @Override
+    public boolean showRound() { return showRound; }
 }
