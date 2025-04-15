@@ -25,6 +25,7 @@ public class Board{
     private final String blackPlayerName;
     private Player currentPlayer;
     private Player winner;
+    private int round;
 
     public Board(
             int height,
@@ -39,6 +40,7 @@ public class Board{
         }
         this.height = height;
         this.width = width;
+        this.round = 1;
         this.rule = rule;
         this.currentPlayer = Player.BLACK;
         this.pieceGrid = new Piece[height+2][width+2];
@@ -79,7 +81,7 @@ public class Board{
     }
 
     public String toString() {
-        return rule + " " + height + "x" + width + " " + switch(winner) {
+        return rule.getName() + " " + height + "x" + width + " " + switch(winner) {
             case null -> "ongoing";
             case NONE -> "draw";
             case BLACK -> "black win";
@@ -106,6 +108,9 @@ public class Board{
         }
         this.rule.getGameRule().placePiece(move, currentPlayer, pieceGrid);
         currentPlayer = this.rule.getGameRule().nextPlayer(currentPlayer, pieceGrid);
+        if(currentPlayer == Player.BLACK) {
+            round++;
+        }
         updateBoard();
         if(this.rule.getGameRule().gameOverCheck(currentPlayer, pieceGrid)) {
             this.winner = this.rule.getGameRule().gameWonCheck(currentPlayer, pieceGrid);
@@ -179,7 +184,12 @@ public class Board{
      * show player info and the current player while playing
      */
     private void displayPlayerInfo() {
-        int align = (height-2)/2;
+        int align;
+        if(rule.showRound()) {
+            align = (height-3)/2;
+        } else {
+            align = (height-2)/2;
+        }
 
         {
             StringBuilder buf = new StringBuilder("Player[" + whitePlayerName + "] ");
@@ -224,6 +234,10 @@ public class Board{
         }
 
         statisticsView.println(align+2, "Current Player: " + currentPlayer.name().toLowerCase());
+
+        if(rule.showRound()) {
+            statisticsView.println(align+3, "Current Round: " + round);
+        }
     }
 
     /**

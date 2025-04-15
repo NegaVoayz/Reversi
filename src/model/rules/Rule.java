@@ -8,5 +8,7 @@ public interface Rule {
 
     String toString();
 
+    boolean showRound();
+
     default String getName() { return "How the hell could you reach here?"; }
 }

@@ -186,7 +186,7 @@ public class GameController {
     private void selectBoardsByRuleName(String ruleName) {
         for(int i = boardsSelected.size(); i > 0; i--) {
             int tempBoardNO = boardsSelected.poll();
-            if(boards.get(tempBoardNO).getRule().toString().equals(ruleName)) {
+            if(boards.get(tempBoardNO).getRule().getName().equals(ruleName)) {
                 boardsSelected.add(tempBoardNO);
             }
         }
