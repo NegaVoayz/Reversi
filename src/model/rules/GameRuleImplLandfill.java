@@ -6,7 +6,15 @@ import model.structs.Move;
 import model.structs.Point;
 import model.enums.Player;
 
-public class GameRuleImplLandfill extends GameRuleImplGomoku {
+public class GameRuleImplLandfill extends GameRuleImplMonochrome {
+
+    private static final GameRuleImplLandfill instance = new GameRuleImplLandfill();
+
+    public static GameRuleImplLandfill getGameRule() {
+        return instance;
+    }
+
+    private GameRuleImplLandfill() {}
 
     /**
      * allocate pieceGrid and set the start pieces

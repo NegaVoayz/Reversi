@@ -7,6 +7,15 @@ import model.structs.Point;
 import model.enums.Player;
 
 public class GameRuleImplReversi extends GameRuleImplMonochrome {
+
+    private static final GameRuleImplReversi instance = new GameRuleImplReversi();
+
+    public static GameRuleImplReversi getGameRule() {
+        return instance;
+    }
+
+    private GameRuleImplReversi() {}
+
     private final static Point[] DIRECTIONS = {
             new Point(1,1),  new Point(1,0),  new Point(1,-1),
             new Point(0,1),                         new Point(0,-1),

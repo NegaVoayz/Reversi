@@ -26,7 +26,7 @@ public class BoardFactory {
         boardSizeRow = 8;
         verticalAlign = AlignType.BEGIN;
         horizontalAlign = AlignType.BEGIN;
-        rule = new RuleImplReversi();
+        rule = RuleImplReversi.getRule();
         rect = new Rect(0, boardSizeRow+1, 0, boardSizeCol*2+Board.ULTIMATE_ANSWER);
     }
 
@@ -83,7 +83,7 @@ public class BoardFactory {
     }
 
     public BoardFactory useDefaultRule() {
-        this.rule = new RuleImplReversi();
+        this.rule = RuleImplReversi.getRule();
         return this;
     }
 

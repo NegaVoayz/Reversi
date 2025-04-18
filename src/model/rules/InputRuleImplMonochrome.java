@@ -6,6 +6,14 @@ import model.structs.Point;
 
 public class InputRuleImplMonochrome implements InputRule {
 
+    private static final InputRuleImplMonochrome instance = new InputRuleImplMonochrome();
+
+    public static InputRuleImplMonochrome getInputRule() {
+        return instance;
+    }
+
+    private InputRuleImplMonochrome() {}
+
     @Override
     public Move ParseInput(String input) {
         if(input.length() != 2) {

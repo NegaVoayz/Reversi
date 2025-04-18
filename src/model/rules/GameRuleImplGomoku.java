@@ -7,6 +7,14 @@ import model.structs.Move;
 import model.structs.Point;
 
 public class GameRuleImplGomoku extends GameRuleImplMonochrome {
+    private static final GameRuleImplGomoku instance = new GameRuleImplGomoku();
+
+    public static GameRuleImplGomoku getGameRule() {
+        return instance;
+    }
+
+    private GameRuleImplGomoku() {}
+
     private final static Point[] DIRECTIONS = {
             new Point(1,1),  new Point(1,0),  new Point(1,-1),
             new Point(0,1),                         new Point(0,-1),

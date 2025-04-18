@@ -38,11 +38,11 @@ public class InitializationController {
     }
 
     private void useDefaultBoardSets() {
-        boardFactory.setRule(new RuleImplReversi());
+        boardFactory.setRule(RuleImplReversi.getRule());
         boards.add(boardFactory.createBoard());
-        boardFactory.setRule(new RuleImplLandfill());
+        boardFactory.setRule(RuleImplLandfill.getRule());
         boards.add(boardFactory.createBoard());
-        boardFactory.setRule(new RuleImplGomoku());
+        boardFactory.setRule(RuleImplGomoku.getRule());
         boards.add(boardFactory.createBoard());
     }
 
@@ -57,9 +57,9 @@ public class InitializationController {
         System.out.println("Enter board rule: (peace or reversi)");
         String input = scanner.nextLine();
         if( input.compareToIgnoreCase("peace")==0 ) {
-            boardFactory.setRule(new RuleImplLandfill());
+            boardFactory.setRule(RuleImplLandfill.getRule());
         } else if( input.equals("reversi") ) {
-            boardFactory.setRule(new RuleImplReversi());
+            boardFactory.setRule(RuleImplReversi.getRule());
         } else {
             System.out.println("Invalid board rule, using default rule REVERSI.");
             boardFactory.useDefaultRule();

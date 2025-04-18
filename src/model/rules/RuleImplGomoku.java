@@ -1,8 +1,17 @@
 package model.rules;
 
 public class RuleImplGomoku implements Rule {
-    final InputRule inputRule = new InputRuleImplMonochrome();
-    final GameRule gameRule = new GameRuleImplGomoku();
+
+    private static final RuleImplGomoku instance = new RuleImplGomoku();
+
+    public static RuleImplGomoku getRule() {
+        return instance;
+    }
+
+    private RuleImplGomoku() {}
+
+    final InputRule inputRule = InputRuleImplMonochrome.getInputRule();
+    final GameRule gameRule = GameRuleImplGomoku.getGameRule();
 
     @Override
     public GameRule getGameRule() {

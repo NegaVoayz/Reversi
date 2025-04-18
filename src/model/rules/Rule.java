@@ -6,8 +6,6 @@ public interface Rule {
 
     InputRule getInputRule();
 
-    String toString();
-
     boolean showRound();
 
     default String getName() { return "How the hell could you reach here?"; }
