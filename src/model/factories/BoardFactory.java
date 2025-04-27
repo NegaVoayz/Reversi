@@ -4,6 +4,7 @@ import model.Board;
 import model.enums.AlignType;
 import model.rules.Rule;
 import model.rules.RuleImplReversi;
+import model.structs.Point;
 import model.structs.Rect;
 import view.Screen;
 
@@ -14,7 +15,8 @@ public class BoardFactory {
     private int boardSizeRow;
     private Rule rule;
     private Screen screen;
-    private final Rect rect;
+    private Rect windowRect;
+    private final Point viewStart;
     private AlignType verticalAlign;
     private AlignType horizontalAlign;
 
@@ -27,7 +29,8 @@ public class BoardFactory {
         verticalAlign = AlignType.BEGIN;
         horizontalAlign = AlignType.BEGIN;
         rule = RuleImplReversi.getRule();
-        rect = new Rect(0, boardSizeRow+1, 0, boardSizeCol*2+Board.ULTIMATE_ANSWER);
+        windowRect = new Rect(0, boardSizeRow+1, 0, boardSizeCol*2+Board.ULTIMATE_ANSWER);
+        viewStart = new Point(0, 0);
     }
 
     public boolean isLegalSetting() {
@@ -51,28 +54,24 @@ public class BoardFactory {
 
     public BoardFactory setBoardSizeCol(int boardSizeCol) {
         this.boardSizeCol = boardSizeCol;
-        this.rect.right = this.rect.left + this.boardSizeCol*2+Board.ULTIMATE_ANSWER;
         applyHorizontalAlign();
         return this;
     }
 
     public BoardFactory useDefaultBoardSizeCol() {
         this.boardSizeCol = 8;
-        this.rect.right = this.rect.left + this.boardSizeCol*2+Board.ULTIMATE_ANSWER;
         applyHorizontalAlign();
         return this;
     }
 
     public BoardFactory setBoardSizeRow(int boardSizeRow) {
         this.boardSizeRow = boardSizeRow;
-        this.rect.bottom = this.rect.top + this.boardSizeRow+1;
         applyVerticalAlign();
         return this;
     }
 
     public BoardFactory useDefaultBoardSizeRow() {
         this.boardSizeRow = 8;
-        this.rect.bottom = this.rect.top + this.boardSizeRow+1;
         applyVerticalAlign();
         return this;
     }
@@ -89,6 +88,11 @@ public class BoardFactory {
 
     public BoardFactory setScreen(Screen screen) {
         this.screen = screen;
+        return this;
+    }
+
+    public BoardFactory setWindowRect(Rect windowRect) {
+        this.windowRect = windowRect;
         return this;
     }
 
@@ -121,7 +125,8 @@ public class BoardFactory {
                 boardSizeRow,
                 boardSizeCol,
                 rule,
-                screen.createWindow(rect),
+                screen.createWindow(windowRect),
+                viewStart,
                 whitePlayerName,
                 blackPlayerName);
     }
@@ -131,40 +136,22 @@ public class BoardFactory {
     }
 
     private void applyVerticalAlign() {
-        int height = rect.bottom - rect.top;
+        int height = this.boardSizeRow+1;
         int screenHeight = screen.getRect().bottom - screen.getRect().top;
-        switch (verticalAlign) {
-            case BEGIN:
-                rect.top = 0;
-                rect.bottom = height;
-                break;
-            case MIDDLE:
-                rect.top = (screenHeight - height) / 2;
-                rect.bottom = rect.top + height;
-                break;
-            case END:
-                rect.top = screenHeight - height;
-                rect.bottom = screenHeight;
-                break;
-        }
+        viewStart.y = switch (verticalAlign) {
+            case BEGIN ->  0;
+            case MIDDLE -> (screenHeight - height) / 2;
+            case END -> screenHeight - height;
+        };
     }
 
     private void applyHorizontalAlign() {
-        int width = rect.right - rect.left;
+        int width = this.boardSizeCol*2+Board.ULTIMATE_ANSWER;
         int screenWidth = screen.getRect().right - screen.getRect().left;
-        switch (horizontalAlign) {
-            case BEGIN:
-                rect.left = 0;
-                rect.right = width;
-                break;
-            case MIDDLE:
-                rect.left = (screenWidth - width) / 2;
-                rect.right = rect.left + width;
-                break;
-            case END:
-                rect.left = screenWidth - width;
-                rect.right = screenWidth;
-                break;
-        }
+        viewStart.x = switch (horizontalAlign) {
+            case BEGIN -> 0;
+            case MIDDLE -> (screenWidth - width) / 2;
+            case END -> screenWidth - width;
+        };
     }
 }

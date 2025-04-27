@@ -6,9 +6,12 @@ import model.factories.BoardFactory;
 import model.rules.RuleImplGomoku;
 import model.rules.RuleImplLandfill;
 import model.rules.RuleImplReversi;
+import model.structs.Rect;
 import view.Screen;
 
 import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -24,6 +27,7 @@ public class InitializationController {
         this.boardFactory = BoardFactory
                 .create()
                 .setScreen(screen)
+                .setWindowRect(GameController.BOARD_RECT)
                 .useDefaultVerticalAlign()
                 .useDefaultHorizontalAlign();
     }
@@ -68,10 +72,23 @@ public class InitializationController {
 
     private void inputBoardSize() {
         System.out.println("Enter board size: (one number only)");
-        int boardSize = scanner.nextInt();
-        boardFactory
-                .setBoardSizeCol(boardSize)
-                .setBoardSizeRow(boardSize);
+        int boardSize = -1;
+        while(true) {
+            try {
+                boardSize = scanner.nextInt();
+                boardFactory
+                        .setBoardSizeCol(boardSize)
+                        .setBoardSizeRow(boardSize);
+                break;
+            } catch (InputMismatchException _) {
+                System.out.println("Invalid input");
+                scanner.nextLine();
+            } catch (NoSuchElementException _) {
+                System.out.println("Session closed");
+                System.exit(0);
+            }
+        }
+
         if(boardSize < Board.MIN_BOARD_SIZE || boardSize > Board.MAX_BOARD_SIZE) {
             System.out.println("Invalid board size, using default board size 8x8.");
             boardFactory

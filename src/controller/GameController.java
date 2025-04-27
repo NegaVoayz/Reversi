@@ -17,6 +17,10 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class GameController {
+    public static final Rect BOARD_RECT = new Rect(0, 10, 0, 80);
+    public static final Rect BOARD_LIST_RECT = new Rect(0, 10, 80, 120);
+    public static final Rect BOARD_LIST_SIZE =new Rect(0, 10, 0, 32);
+
     private final ArrayList<Board> boards;
     private final String whitePlayerName;
     private final String blackPlayerName;
@@ -39,13 +43,14 @@ public class GameController {
         this.whitePlayerName = boards.getFirst().getWhitePlayerName();
         this.blackPlayerName = boards.getFirst().getBlackPlayerName();
         this.boardsSelected = new LinkedList<>();
-        this.boardsWindow = screen.createWindow(new Rect(0, 10, 80, 120));
-        this.boardsView = boardsWindow.createView(new Rect(0, 10, 0, 32));
+        this.boardsWindow = screen.createWindow(BOARD_LIST_RECT);
+        this.boardsView = boardsWindow.createView(BOARD_LIST_SIZE);
         boardFactory = BoardFactory
                 .create()
                 .setWhitePlayerName(whitePlayerName)
                 .setBlackPlayerName(blackPlayerName)
                 .setScreen(screen)
+                .setWindowRect(BOARD_RECT)
                 .useDefaultBoardSizeCol()
                 .useDefaultBoardSizeRow()
                 .useDefaultVerticalAlign()
@@ -84,7 +89,7 @@ public class GameController {
         try {
             newBoardNo = Integer.parseInt(input);
         } catch (NumberFormatException e) {
-            System.out.println("Invalid input: not a number");
+            System.out.println("Invalid input: \""+input+"\" is not a number");
             return false;
         }
         if(newBoardNo <= 0 || newBoardNo > boards.size()) {
@@ -111,8 +116,9 @@ public class GameController {
         return placePiece(tempMove);
     }
 
-
+    private boolean parseSucceeded;
     protected GameController parseCreate(String input) {
+        parseSucceeded = true;
         String[] tokens = input.split("\\s+");
         switch(tokens[0].toLowerCase()) {
             case RuleImplReversi.name:
@@ -126,26 +132,43 @@ public class GameController {
                 break;
             default:
                 System.out.println("No rule named " + tokens[0] + ". Try 'reversi' or 'peace'.");
-                boardFactory.useDefaultRule();
+                parseSucceeded = false;
+                return this;
         }
         if(tokens.length == 1) {
             return this;
         }
         if(tokens.length == 2) {
-            boardFactory
-                .setBoardSizeCol(Integer.parseInt(tokens[1]))
-                .setBoardSizeRow(Integer.parseInt(tokens[1]));
+            try {
+                boardFactory
+                        .setBoardSizeCol(Integer.parseInt(tokens[1]))
+                        .setBoardSizeRow(Integer.parseInt(tokens[1]));
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input: \""+tokens[1]+"\" is not a number.");
+                parseSucceeded = false;
+            }
             return this;
         }
-        boardFactory
-                .setBoardSizeCol(Integer.parseInt(tokens[1]))
-                .setBoardSizeRow(Integer.parseInt(tokens[2]));
+        try {
+            boardFactory
+                    .setBoardSizeCol(Integer.parseInt(tokens[1]))
+                    .setBoardSizeRow(Integer.parseInt(tokens[2]));
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input:");
+            System.out.println("\""+tokens[1]+"\" or \""+tokens[2]+"\" is not a number");
+            parseSucceeded = false;
+        }
         return this;
     }
 
     protected boolean createBoard() {
+        if(parseSucceeded == false) {
+            System.out.println("Board Creation Failed.");
+            return false;
+        }
         if(!boardFactory.isLegalSetting()) {
-            System.out.println("Invalid board settings. And, board size must be between " + Board.MIN_BOARD_SIZE + " and " + Board.MAX_BOARD_SIZE);
+            System.out.println("Invalid board settings.");
+            System.out.println("Board size must be between " + Board.MIN_BOARD_SIZE + " and " + Board.MAX_BOARD_SIZE);
             return false;
         }
         boards.add(boardFactory.createBoard());

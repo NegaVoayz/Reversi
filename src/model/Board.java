@@ -34,6 +34,7 @@ public class Board{
             int width,
             Rule rule,
             Window window,
+            Point viewStart,
             String whitePlayerName,
             String blackPlayerName) {
         if(height < MIN_BOARD_SIZE || height > MAX_BOARD_SIZE ||
@@ -48,9 +49,9 @@ public class Board{
         this.pieceGrid = new Piece[height+2][width+2];
         this.rule.getGameRule().initializeGrid(pieceGrid);
         this.window = window;
-        this.boardView = window.createView(new Rect(0, height+1, 0, width*2+1));
+        this.boardView = window.createView(new Rect(viewStart.y, viewStart.y+height+1, viewStart.x, viewStart.x+width*2+1));
         if(this.boardView == null) { throw new IllegalArgumentException("Unable to draw board: Space occupied"); }
-        this.statisticsView = window.createView(new Rect(0, height+1, width*2+1, width*2+ULTIMATE_ANSWER));
+        this.statisticsView = window.createView(new Rect(viewStart.y, viewStart.y+height+1, viewStart.x+width*2+1, viewStart.x+width*2+ULTIMATE_ANSWER));
         if(this.statisticsView == null) { throw new IllegalArgumentException("Unable to draw statistics: Space occupied"); }
         if(whitePlayerName.length() > 32 || blackPlayerName.length() > 32) {
             throw new IllegalArgumentException("Unable to initialize name: too long");

@@ -72,7 +72,17 @@ public class InputController {
         return new LinkedList<>(Arrays.stream(command.content.split("\\s+")).toList());
     }
 
+    private boolean findBrackets() {
+        String str = command.content;
+        return str.indexOf('(') != -1 || str.indexOf(')') != -1
+                || str.indexOf('[') != -1 || str.indexOf(']') != -1;
+    }
+
     private CommandType parseToken(String firstToken, Queue<String> tokens) {
+        if(findBrackets()) {
+            System.out.println("No Brackets!");
+            return CommandType.ERROR;
+        }
         return switch (firstToken) {
             case "help", "man" -> handleHelp();
             case "switch" -> handleSwitch(tokens);
@@ -144,6 +154,8 @@ public class InputController {
 
     private static boolean showHelp() {
         System.out.println("Command Manual:");
+        System.out.println("[] means argument, () means optional.");
+        System.out.println("Brackets are not allowed in all commands.");
         System.out.println("| command        | arguments                              | effect                      |");
         System.out.println("|----------------|----------------------------------------|-----------------------------|");
         System.out.println("| help/man       |                                        | help                        |");
