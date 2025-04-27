@@ -1,4 +1,4 @@
-# Reversi Project 2.4.3
+# Reversi Project 2.4.4
 
 ## Class & Function Document
 
@@ -149,3 +149,7 @@ Added score board.
 #### V2.4.3
 
 Added command quit.
+
+#### V2.4.4
+
+Added new rule gomoku.

@@ -20,7 +20,8 @@ public class GameController {
     private final ArrayList<Board> boards;
     private final String whitePlayerName;
     private final String blackPlayerName;
-    private int currentBoard;
+    private Board currentBoard;
+    private int currentBoardNo;
     private int gameOverCount;
     private int whiteWinCount;
     private int blackWinCount;
@@ -31,9 +32,10 @@ public class GameController {
     public GameController(ArrayList<Board> boards, Screen screen) {
         this.boards = boards;
         this.gameOverCount = 0;
-        this.currentBoard  = 0;
         this.whiteWinCount = 0;
         this.blackWinCount = 0;
+        this.currentBoardNo = 0;
+        this.currentBoard  = boards.getFirst();
         this.whitePlayerName = boards.getFirst().getWhitePlayerName();
         this.blackPlayerName = boards.getFirst().getBlackPlayerName();
         this.boardsSelected = new LinkedList<>();
@@ -53,7 +55,7 @@ public class GameController {
     }
 
     public void showBoard() {
-        boards.get(currentBoard).show();
+        currentBoard.show();
         boardsView.paint();
     }
 
@@ -78,17 +80,19 @@ public class GameController {
     }
 
     protected boolean setCurrentBoard(String input) {
-        int currentBoard;
+        int newBoardNo;
         try {
-            currentBoard = Integer.parseInt(input);
+            newBoardNo = Integer.parseInt(input);
         } catch (NumberFormatException e) {
+            System.out.println("Invalid input: not a number");
             return false;
         }
-        if(currentBoard <= 0 || currentBoard > boards.size()) {
-            System.out.println("Invalid board number: " + currentBoard);
+        if(newBoardNo <= 0 || newBoardNo > boards.size()) {
+            System.out.println("Invalid board number: " + newBoardNo);
             return false;
         }
-        this.currentBoard = currentBoard - 1;
+        this.currentBoardNo = newBoardNo - 1;
+        this.currentBoard = boards.get(currentBoardNo);
         setBoardsWindow();
         showBoard();
         return true;
@@ -96,7 +100,7 @@ public class GameController {
 
     private Move tempMove;
     protected GameController parseMove(String input) {
-        tempMove = boards.get(currentBoard).getInputRule().ParseInput(input);
+        tempMove = currentBoard.getInputRule().ParseInput(input);
         return this;
     }
 
@@ -112,17 +116,17 @@ public class GameController {
         String[] tokens = input.split("\\s+");
         switch(tokens[0].toLowerCase()) {
             case RuleImplReversi.name:
-                boardFactory.setRule(new RuleImplReversi());
+                boardFactory.setRule(RuleImplReversi.getRule());
                 break;
             case RuleImplLandfill.name:
-                boardFactory.setRule(new RuleImplLandfill());
+                boardFactory.setRule(RuleImplLandfill.getRule());
                 break;
             case RuleImplGomoku.name:
-                boardFactory.setRule(new RuleImplGomoku());
+                boardFactory.setRule(RuleImplGomoku.getRule());
                 break;
             default:
                 System.out.println("No rule named " + tokens[0] + ". Try 'reversi' or 'peace'.");
-                boardFactory.setRule(null);
+                boardFactory.useDefaultRule();
         }
         if(tokens.length == 1) {
             return this;
@@ -157,7 +161,7 @@ public class GameController {
         boardsSelected.clear();
         String[] tokens = selector.split("\\s+");
         if(tokens[0].compareToIgnoreCase("current") == 0) {
-            boardsSelected.add(currentBoard);
+            boardsSelected.add(currentBoardNo);
             return this;
         }
         selectAllBoards();
@@ -184,7 +188,7 @@ public class GameController {
     }
 
     private void selectBoardsByRuleName(String ruleName) {
-        for(int i = boardsSelected.size(); i > 0; i--) {
+        while(!boardsSelected.isEmpty()) {
             int tempBoardNO = boardsSelected.poll();
             if(boards.get(tempBoardNO).getRule().getName().equals(ruleName)) {
                 boardsSelected.add(tempBoardNO);
@@ -199,19 +203,19 @@ public class GameController {
         if( move == null ) {
             return false;
         }
-        if( boards.get(currentBoard).isGameOver() ) {
+        if( currentBoard.isGameOver() ) {
             System.out.println("Game Over!");
             return false;
         }
-        if( !boards.get(currentBoard).placePiece(move) ) {
+        if( !currentBoard.placePiece(move) ) {
             System.out.println("Invalid Move");
             return false;
         }
         showBoard();
-        if( boards.get(currentBoard).isGameOver() ) {
-            if(boards.get(currentBoard).getWinner() == Player.WHITE) {
+        if(currentBoard.isGameOver() ) {
+            if(currentBoard.getWinner() == Player.WHITE) {
                 whiteWinCount++;
-            } else if(boards.get(currentBoard).getWinner() == Player.BLACK) {
+            } else if(currentBoard.getWinner() == Player.BLACK) {
                 blackWinCount++;
             }
             gameOverCount++;
@@ -221,20 +225,20 @@ public class GameController {
 
     private void setBoardsWindow() {
         int startY = 1;
-        int startBoard = currentBoard-3;
+        int startBoard = currentBoardNo-3;
         if(startBoard < 0) {
             startY = 1-startBoard;
             startBoard = 0;
         }
         boardsView.clearView();
-        if(currentBoard-3 > 0) {
+        if(currentBoardNo-3 > 0) {
             boardsView.println(0,"    ...");
         }
-        if(currentBoard+5 < boards.size()) {
+        if(currentBoardNo+5 < boards.size()) {
             boardsView.println(9,"    ...");
         }
         for(int i = startY, j = startBoard; i < 9 && j < boards.size(); i++, j++) {
-            if(j == currentBoard) {
+            if(j == currentBoardNo) {
                 boardsView.println(i, "--> Board " + (j + 1) + ": " + boards.get(j).getBriefInformation());
             } else {
                 boardsView.println(i, "    Board " + (j + 1) + ": " + boards.get(j).getBriefInformation());

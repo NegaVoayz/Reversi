@@ -1,6 +1,8 @@
 package model;
 
 import model.enums.Player;
+import model.pieces.Piece;
+import model.pieces.PieceImplMonochrome;
 import model.rules.InputRule;
 import model.rules.Rule;
 import model.structs.Move;
@@ -155,8 +157,7 @@ public class Board{
         Point point = new Point(0, 0);
         for(int i = 1; i <= height; i++) {
             for(int j = 1; j <= width; j++) {
-                point.x = 2*j-1;
-                point.y = i;
+                point.set(2*j-1,i);
                 boardView.setPixel(point, pieceGrid[i][j].getPixel());
             }
         }

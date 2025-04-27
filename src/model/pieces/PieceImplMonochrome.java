@@ -1,35 +1,17 @@
-package model;
+package model.pieces;
 
-import model.enums.Player;
 import view.Pixel;
 import view.PixelImplConsole;
 
-public final class PieceImplMonochrome implements Piece {
+public final class PieceImplMonochrome extends Piece {
     
     public final static Pixel NONE_PIECE  =  new PixelImplConsole(' ');
     public final static Pixel WHITE_PIECE =  new PixelImplConsole('●');
     public final static Pixel BLACK_PIECE =  new PixelImplConsole('○');
     public final static Pixel VALID_MOVE  =  new PixelImplConsole('·');
 
-    private Player player;
-
-    public PieceImplMonochrome() {
-        this.player = Player.NONE;
-    }
-
-    /**
-     * manually set piece type
-     * designed for pieceGrid initialization
-     * @param player Piece.type
-     */
-    @Override
-    public void setPlayer(Player player) {
-        this.player = player;
-    }
-
-    @Override
-    public Player getPlayer() {
-        return this.player;
+    public PieceImplMonochrome(){
+        super();
     }
 
     /**
@@ -38,7 +20,7 @@ public final class PieceImplMonochrome implements Piece {
      */
     @Override
     public Pixel getPixel() {
-        return switch (this.player) {
+        return switch (this.getPlayer()) {
             case WHITE -> WHITE_PIECE;
             case BLACK -> BLACK_PIECE;
             default -> NONE_PIECE;

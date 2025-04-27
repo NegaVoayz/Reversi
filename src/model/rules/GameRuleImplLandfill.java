@@ -1,12 +1,12 @@
 package model.rules;
 
-import model.Piece;
-import model.PieceImplMonochrome;
+import model.pieces.Piece;
+import model.pieces.PieceImplMonochrome;
 import model.structs.Move;
 import model.structs.Point;
 import model.enums.Player;
 
-public class GameRuleImplLandfill extends GameRuleImplMonochrome {
+public class GameRuleImplLandfill extends AbstractGameRuleMonochrome {
 
     private static final GameRuleImplLandfill instance = new GameRuleImplLandfill();
 

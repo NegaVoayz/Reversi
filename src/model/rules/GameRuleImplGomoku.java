@@ -1,12 +1,12 @@
 package model.rules;
 
-import model.Piece;
-import model.PieceImplMonochrome;
+import model.pieces.Piece;
+import model.pieces.PieceImplMonochrome;
 import model.enums.Player;
 import model.structs.Move;
 import model.structs.Point;
 
-public class GameRuleImplGomoku extends GameRuleImplMonochrome {
+public class GameRuleImplGomoku extends AbstractGameRuleMonochrome {
     private static final GameRuleImplGomoku instance = new GameRuleImplGomoku();
 
     public static GameRuleImplGomoku getGameRule() {

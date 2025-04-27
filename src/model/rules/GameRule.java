@@ -1,6 +1,6 @@
 package model.rules;
 
-import model.Piece;
+import model.pieces.Piece;
 import model.structs.Move;
 import model.enums.Player;
 

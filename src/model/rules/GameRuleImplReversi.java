@@ -1,12 +1,12 @@
 package model.rules;
 
-import model.Piece;
-import model.PieceImplMonochrome;
+import model.pieces.Piece;
+import model.pieces.PieceImplMonochrome;
 import model.structs.Move;
 import model.structs.Point;
 import model.enums.Player;
 
-public class GameRuleImplReversi extends GameRuleImplMonochrome {
+public class GameRuleImplReversi extends AbstractGameRuleMonochrome {
 
     private static final GameRuleImplReversi instance = new GameRuleImplReversi();
 
