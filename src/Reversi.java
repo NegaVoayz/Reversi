@@ -23,6 +23,7 @@ public class Reversi{
         ArrayList<Board> boards = new ArrayList<>();
         Screen screen = new ScreenImplConsole(12, 120);
 
+        // initialize game
         InitializationController initializationController = new InitializationController(scanner, boards, screen);
         initializationController.initialize();
 
@@ -30,6 +31,7 @@ public class Reversi{
         InputController inputController = new InputController(scanner, gameController);
         SettlementController settlementController = new SettlementController(gameController,screen);
 
+        // main loop
         System.out.println("Welcome, players. Try 'help' for command instructions.");
         while(!gameController.isAllGameOver()) {
             boolean isValidMove = inputController
@@ -41,6 +43,7 @@ public class Reversi{
             }
         }
 
+        // game over
         System.out.println("Game Over!");
         try {
             TimeUnit.SECONDS.sleep(1);
@@ -54,6 +57,5 @@ public class Reversi{
         settlementController.announceResult();
 
         scanner.close();
-        return;
     }
 }

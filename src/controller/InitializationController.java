@@ -15,12 +15,36 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Handles the initialization phase of the game setup.
+ *
+ * <p>This controller is responsible for:
+ * <ul>
+ *     <li>Configuring game board parameters (size, rules)</li>
+ *     <li>Collecting and validating player information</li>
+ *     <li>Creating initial game board instances</li>
+ *     <li>Setting up default game configurations</li>
+ * </ul>
+ *
+ * <p>Usage example:
+ * <pre>
+ * InitializationController initController = new InitializationController(scanner, boards, screen);
+ * initController.initialize();
+ * </pre>
+ */
 public class InitializationController {
     private final Scanner scanner;
     private final ArrayList<Board> boards;
     private final BoardFactory boardFactory;
     private int boardNumber;
 
+    /**
+     * Constructs an InitializationController with required dependencies.
+     *
+     * @param scanner Input scanner for user interactions
+     * @param boards Collection to store initialized boards
+     * @param screen Display screen for rendering game elements
+     */
     public InitializationController(Scanner scanner, ArrayList<Board> boards, Screen screen) {
         this.scanner = scanner;
         this.boards = boards;
@@ -32,15 +56,28 @@ public class InitializationController {
                 .useDefaultHorizontalAlign();
     }
 
+    /**
+     * Executes the complete initialization sequence.
+     *
+     * <p>This method coordinates the setup process by calling individual
+     * initialization methods in the proper sequence.
+     */
     public void initialize() {
-//        inputBoardRule();
-//        inputBoardCount();
         inputBoardSize();
         inputPlayerNames();
         useDefaultBoardSets();
-//        initializeBoards();
     }
 
+    /**
+     * Creates and adds default board configurations to the game.
+     *
+     * <p>Initializes three standard game boards with different rules:
+     * <ol>
+     *   <li>Reversi</li>
+     *   <li>Landfill</li>
+     *   <li>Gomoku</li>
+     * </ol>
+     */
     private void useDefaultBoardSets() {
         boardFactory.setRule(RuleImplReversi.getRule());
         boards.add(boardFactory.createBoard());
@@ -50,6 +87,11 @@ public class InitializationController {
         boards.add(boardFactory.createBoard());
     }
 
+    /**
+     * Initializes the specified number of game boards.
+     *
+     * <p>Creates multiple board instances using the current factory configuration.
+     */
     private void initializeBoards() {
         boards.ensureCapacity(boardNumber);
         for(int i = 0; i < boardNumber; i++) {
@@ -57,6 +99,12 @@ public class InitializationController {
         }
     }
 
+    /**
+     * Prompts for and sets the game rule type.
+     *
+     * <p>Accepts either "peace" or "reversi" as valid inputs.
+     * Falls back to default rule if input is invalid.
+     */
     private void inputBoardRule() {
         System.out.println("Enter board rule: (peace or reversi)");
         String input = scanner.nextLine();
@@ -70,15 +118,33 @@ public class InitializationController {
         }
     }
 
+    /**
+     * Collects and validates board size input from the user.
+     *
+     * <p>Handles various error cases:
+     * <ul>
+     *   <li>Non-numeric input</li>
+     *   <li>Out-of-range values</li>
+     *   <li>Unexpected input termination</li>
+     * </ul>
+     *
+     * <p>Board size must be between {@link Board#MIN_BOARD_SIZE} and
+     * {@link Board#MAX_BOARD_SIZE}.
+     */
     private void inputBoardSize() {
         System.out.println("Enter board size: (one number only)");
-        int boardSize = -1;
+        int boardSize;
         while(true) {
             try {
                 boardSize = scanner.nextInt();
                 boardFactory
                         .setBoardSizeCol(boardSize)
                         .setBoardSizeRow(boardSize);
+
+                if(boardSize < Board.MIN_BOARD_SIZE || boardSize > Board.MAX_BOARD_SIZE) {
+                    System.out.println("Invalid board size.");
+                    continue;
+                }
                 break;
             } catch (InputMismatchException _) {
                 System.out.println("Invalid input");
@@ -88,23 +154,13 @@ public class InitializationController {
                 System.exit(0);
             }
         }
-
-        if(boardSize < Board.MIN_BOARD_SIZE || boardSize > Board.MAX_BOARD_SIZE) {
-            System.out.println("Invalid board size, using default board size 8x8.");
-            boardFactory
-                    .useDefaultBoardSizeCol()
-                    .useDefaultBoardSizeRow();
-            try {
-                TimeUnit.SECONDS.sleep(1);
-            } catch (InterruptedException _) {
-                /* I don't care unless your computer
-                 * ordered a pineapple pizza
-                 * due to this unprocessed exception.
-                 */
-            }
-        }
     }
 
+    /**
+     * Collects the number of boards to initialize.
+     *
+     * <p>Stores the value for later use in {@link #initializeBoards()}.
+     */
     private void inputBoardCount() {
         System.out.println("Enter board number: ");
         boardNumber = scanner.nextInt();
@@ -112,10 +168,10 @@ public class InitializationController {
     }
 
     /**
-     * Retrieves the name of the player.
+     * Collects and returns a player's name with proper validation.
      *
-     * @param player The player whose name is to be retrieved.
-     * @return The name of the player.
+     * @param player The player (WHITE or BLACK) whose name is being collected
+     * @return The validated player name
      */
     private String getName(Player player) {
         Screen.clear();
@@ -133,7 +189,15 @@ public class InitializationController {
     }
 
     /**
-     * Prompts the players to input their names and sets them on the board.
+     * Manages the complete player name collection process.
+     *
+     * <p>Ensures names meet requirements:
+     * <ul>
+     *   <li>Not empty</li>
+     *   <li>Maximum length of 32 characters</li>
+     * </ul>
+     *
+     * <p>Persists until valid names are provided for both players.
      */
     private void inputPlayerNames() {
         String whitePlayerName;

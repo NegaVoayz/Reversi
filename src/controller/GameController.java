@@ -16,30 +16,60 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
+/**
+ * GameController: Controlling multi-board states and interaction.
+ *
+ * <p>Main Functions:
+ * <ul>
+ *     <li>Handle the Switch and Display of multiple Board Entities</li>
+ *     <li>Parse and Execute players' operations on board.</li>
+ *     <li>Create new boards during the game.</li>
+ *     <li>Track the scores.</li>
+ *     <li>Provide Game List View</li>
+ * </ul>
+ */
 public class GameController {
+    // Board Display Area on Screen (y1, y2, x1, x2)
     public static final Rect BOARD_RECT = new Rect(0, 10, 0, 80);
-    public static final Rect BOARD_LIST_RECT = new Rect(0, 10, 80, 120);
-    public static final Rect BOARD_LIST_SIZE =new Rect(0, 10, 0, 32);
 
+    // Game List Display Area on Screen (y1, y2, x1, x2)
+    public static final Rect BOARD_LIST_RECT = new Rect(0, 10, 80, 120);
+
+    // Game List Display Size (0, ySize, 0, xSize)
+    public static final Rect BOARD_LIST_SIZE = new Rect(0, 10, 0, 32);
+
+    // All games
     private final ArrayList<Board> boards;
-    private final String whitePlayerName;
-    private final String blackPlayerName;
-    private Board currentBoard;
+
+    // Current active board index
     private int currentBoardNo;
+
+    // Game Result Statistics
     private int gameOverCount;
     private int whiteWinCount;
     private int blackWinCount;
+
+    private final String whitePlayerName;
+    private final String blackPlayerName;
+
     private final BoardFactory boardFactory;
+
+    // Display Window
     private final Window boardsWindow;
     private final View boardsView;
 
+    /**
+     * Initialize GameController
+     *
+     * @param boards initial game set
+     * @param screen game screen for display
+     */
     public GameController(ArrayList<Board> boards, Screen screen) {
         this.boards = boards;
         this.gameOverCount = 0;
         this.whiteWinCount = 0;
         this.blackWinCount = 0;
         this.currentBoardNo = 0;
-        this.currentBoard  = boards.getFirst();
         this.whitePlayerName = boards.getFirst().getWhitePlayerName();
         this.blackPlayerName = boards.getFirst().getBlackPlayerName();
         this.boardsSelected = new LinkedList<>();
@@ -60,7 +90,7 @@ public class GameController {
     }
 
     public void showBoard() {
-        currentBoard.show();
+        boards.get(currentBoardNo).show();
         boardsView.paint();
     }
 
@@ -84,6 +114,12 @@ public class GameController {
         return blackPlayerName;
     }
 
+    /**
+     * switch board by input
+     *
+     * @param input board No
+     * @return true if succeeded
+     */
     protected boolean setCurrentBoard(String input) {
         int newBoardNo;
         try {
@@ -97,18 +133,28 @@ public class GameController {
             return false;
         }
         this.currentBoardNo = newBoardNo - 1;
-        this.currentBoard = boards.get(currentBoardNo);
         setBoardsWindow();
         showBoard();
         return true;
     }
 
     private Move tempMove;
+    /**
+     * parse players' move by current game rule
+     *
+     * @param input player's command
+     * @return this entity for method chain
+     */
     protected GameController parseMove(String input) {
-        tempMove = currentBoard.getInputRule().ParseInput(input);
+        tempMove = boards.get(currentBoardNo).getInputRule().ParseInput(input);
         return this;
     }
 
+    /**
+     * place piece by last parsed move
+     *
+     * @return true if succeeded
+     */
     protected boolean placePiece() {
         if(tempMove == null) {
             return false;
@@ -116,10 +162,17 @@ public class GameController {
         return placePiece(tempMove);
     }
 
-    private boolean parseSucceeded;
-    protected GameController parseCreate(String input) {
-        parseSucceeded = true;
+    /**
+     * parse players' creating board operation
+     *
+     * @param input command "[game type] ([width] [height])"
+     * @return this entity for method chain
+     * @throws IllegalArgumentException when input is illegal
+     */
+    protected GameController parseCreate(String input) throws IllegalArgumentException {
         String[] tokens = input.split("\\s+");
+
+        // parse the rule type
         switch(tokens[0].toLowerCase()) {
             case RuleImplReversi.name:
                 boardFactory.setRule(RuleImplReversi.getRule());
@@ -131,51 +184,67 @@ public class GameController {
                 boardFactory.setRule(RuleImplGomoku.getRule());
                 break;
             default:
-                System.out.println("No rule named " + tokens[0] + ". Try 'reversi' or 'peace'.");
-                parseSucceeded = false;
-                return this;
+                throw new IllegalArgumentException("No rule named " + tokens[0] + ". Try 'reversi' or 'peace'.");
         }
+
+        // if size is not specified
         if(tokens.length == 1) {
+            boardFactory
+                    .useDefaultBoardSizeCol()
+                    .useDefaultBoardSizeRow();
             return this;
         }
+
+        // if only one size specified, take as a square board
         if(tokens.length == 2) {
             try {
                 boardFactory
                         .setBoardSizeCol(Integer.parseInt(tokens[1]))
                         .setBoardSizeRow(Integer.parseInt(tokens[1]));
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input: \""+tokens[1]+"\" is not a number.");
-                parseSucceeded = false;
+                throw new IllegalArgumentException("Invalid input: \""+tokens[1]+"\" is not a number.");
             }
             return this;
         }
+
+        // if two sizes specified, set.
         try {
             boardFactory
                     .setBoardSizeCol(Integer.parseInt(tokens[1]))
                     .setBoardSizeRow(Integer.parseInt(tokens[2]));
         } catch (NumberFormatException e) {
-            System.out.println("Invalid input:");
-            System.out.println("\""+tokens[1]+"\" or \""+tokens[2]+"\" is not a number");
-            parseSucceeded = false;
+            throw new IllegalArgumentException("Invalid input: \""+tokens[1]+"\" or \""+tokens[2]+"\" is not a number");
         }
+
+        // check size validity
+        if(!boardFactory.isLegalSetting()) {
+            throw new IllegalArgumentException("Invalid board size.\n" +
+                    "Board size must be between " + Board.MIN_BOARD_SIZE + " and " + Board.MAX_BOARD_SIZE);
+        }
+
         return this;
     }
 
+    /**
+     * create board from last parsed input
+     *
+     * @return true if succeeded
+     */
     protected boolean createBoard() {
-        if(parseSucceeded == false) {
-            System.out.println("Board Creation Failed.");
-            return false;
-        }
-        if(!boardFactory.isLegalSetting()) {
-            System.out.println("Invalid board settings.");
-            System.out.println("Board size must be between " + Board.MIN_BOARD_SIZE + " and " + Board.MAX_BOARD_SIZE);
-            return false;
-        }
         boards.add(boardFactory.createBoard());
-        return this.selectBoards("").listBoards();
+        setBoardsWindow();
+        showBoard();
+        return true;
     }
 
     private final Queue<Integer> boardsSelected;
+
+    /**
+     * Select boards by selectors
+     *
+     * @param selector select rules
+     * @return this entity for method chain
+     */
     protected GameController selectBoards(String selector) {
         if(selector.isEmpty()) {
             selectAllBoards();
@@ -192,6 +261,11 @@ public class GameController {
         return this;
     }
 
+    /**
+     * list the selected boards
+     *
+     * @return true if succeeded
+     */
     protected boolean listBoards() {
         if(boardsSelected.isEmpty()) {
             System.out.println("No boards meet the requirements");
@@ -204,12 +278,14 @@ public class GameController {
         return true;
     }
 
+    // add all boards into select queue
     private  void selectAllBoards() {
         for(int i = 0; i < boards.size(); i++) {
             boardsSelected.add(i);
         }
     }
 
+    // pick the boards matches the rule name
     private void selectBoardsByRuleName(String ruleName) {
         while(!boardsSelected.isEmpty()) {
             int tempBoardNO = boardsSelected.poll();
@@ -220,46 +296,66 @@ public class GameController {
     }
 
     /**
+     * place piece by move, interacts with Board
+     *
      * @return True if the position is valid and the piece is placed successfully
      */
     private boolean placePiece(Move move) {
         if( move == null ) {
             return false;
         }
-        if( currentBoard.isGameOver() ) {
+
+        if( boards.get(currentBoardNo).isGameOver() ) {
             System.out.println("Game Over!");
             return false;
         }
-        if( !currentBoard.placePiece(move) ) {
+
+        if( !boards.get(currentBoardNo).placePiece(move) ) {
             System.out.println("Invalid Move");
             return false;
         }
-        showBoard();
-        if(currentBoard.isGameOver() ) {
-            if(currentBoard.getWinner() == Player.WHITE) {
+
+        // the game over process
+        if(boards.get(currentBoardNo).isGameOver() ) {
+            if(boards.get(currentBoardNo).getWinner() == Player.WHITE) {
                 whiteWinCount++;
-            } else if(currentBoard.getWinner() == Player.BLACK) {
+            } else if(boards.get(currentBoardNo).getWinner() == Player.BLACK) {
                 blackWinCount++;
             }
             gameOverCount++;
+            setBoardsWindow();
         }
+
+        // update view since the board has changed.
+        showBoard();
+
         return true;
     }
 
+    // update boards list window
     private void setBoardsWindow() {
+        // calculate the start position
+        // align current board in the middle
         int startY = 1;
         int startBoard = currentBoardNo-3;
         if(startBoard < 0) {
             startY = 1-startBoard;
             startBoard = 0;
         }
+
         boardsView.clearView();
+
+        // show omit symbol if the boards above exceeded the window
         if(currentBoardNo-3 > 0) {
             boardsView.println(0,"    ...");
         }
+
+        // show omit symbol if the boards below exceeded the window
         if(currentBoardNo+5 < boards.size()) {
             boardsView.println(9,"    ...");
         }
+
+        // display the game list visible
         for(int i = startY, j = startBoard; i < 9 && j < boards.size(); i++, j++) {
             if(j == currentBoardNo) {
                 boardsView.println(i, "--> Board " + (j + 1) + ": " + boards.get(j).getBriefInformation());

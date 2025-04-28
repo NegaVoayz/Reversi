@@ -4,15 +4,41 @@ import model.Board;
 import model.structs.Rect;
 import view.*;
 
+/**
+ * Handles end-game results presentation and final score display.
+ *
+ * <p>Responsibilities:
+ * <ul>
+ *   <li>Calculates final game results</li>
+ *   <li>Creates visual presentation of the outcome</li>
+ *   <li>Displays winner information and final scores</li>
+ * </ul>
+ */
 public class SettlementController {
     private final GameController gameController;
     private final Screen screen;
 
+    /**
+     * Constructs a SettlementController with required dependencies.
+     *
+     * @param gameController Source for game result data
+     * @param screen Display surface for rendering results
+     */
     public SettlementController(final GameController gameController, final Screen screen) {
         this.gameController = gameController;
         this.screen = screen;
     }
 
+    /**
+     * Displays the final game results.
+     *
+     * <p>Creates a visual presentation showing:
+     * <ul>
+     *   <li>The winning player (or draw)</li>
+     *   <li>Personalized victory message</li>
+     *   <li>Final score tally</li>
+     * </ul>
+     */
     public void announceResult() {
         int whiteWinCount = gameController.getWhiteWinCount();
         int blackWinCount = gameController.getBlackWinCount();
