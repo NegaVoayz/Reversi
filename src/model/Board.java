@@ -214,6 +214,12 @@ public class Board{
         return true;
     }
 
+    /**
+     * Renders the board to the display.
+     */
+    public void show() {
+        window.paint();
+    }
 
     /**
      * Initializes the board canvas with row/column labels.
@@ -235,13 +241,6 @@ public class Board{
             point.x = 2*j-1;
             boardView.setPixel(point, new PixelImplConsole((char)('A'+j-1)));
         }
-    }
-
-    /**
-     * Renders the board to the display.
-     */
-    public void show() {
-        window.paint();
     }
 
     /**
