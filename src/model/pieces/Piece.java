@@ -19,5 +19,7 @@ public abstract class Piece {
         return player;
     }
 
+    public abstract void setPiece(Piece piece);
+
     public abstract Pixel getPixel();
 }

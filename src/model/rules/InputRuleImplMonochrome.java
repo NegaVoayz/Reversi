@@ -1,6 +1,7 @@
 package model.rules;
 
 import model.enums.Player;
+import model.pieces.PieceImplMonochrome;
 import model.structs.Move;
 import model.structs.Point;
 
@@ -19,7 +20,7 @@ public class InputRuleImplMonochrome implements InputRule {
         if(input.length() != 2) {
             return null;
         }
-        return new Move(new Point(0,0), new Point(getCol(input.charAt(1)),getRow(input.charAt(0))), Player.NONE);
+        return new Move(new Point(0,0), new Point(getCol(input.charAt(1)),getRow(input.charAt(0))), new PieceImplMonochrome());
     }
 
     /**

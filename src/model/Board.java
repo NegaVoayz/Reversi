@@ -5,6 +5,7 @@ import model.pieces.Piece;
 import model.pieces.PieceImplMonochrome;
 import model.rules.InputRule;
 import model.rules.Rule;
+import model.structs.GameStatistics;
 import model.structs.Move;
 import model.structs.Point;
 import model.structs.Rect;
@@ -34,17 +35,10 @@ public class Board{
 
     // Game state
     private final Rule rule;
-    private final Piece[][] pieceGrid;
+    private final GameStatistics statistics;
     private final Window window;
     private final View boardView;
     private final View statisticsView;
-    private final int height;
-    private final int width;
-    private final String whitePlayerName;
-    private final String blackPlayerName;
-    private Player currentPlayer;
-    private Player winner;
-    private int round;
 
     /**
      * Constructs a new game board.
@@ -52,7 +46,7 @@ public class Board{
      * @param height Number of rows (must be between MIN/MAX_BOARD_SIZE)
      * @param width Number of columns (must be between MIN/MAX_BOARD_SIZE)
      * @param rule Game rules implementation
-     * @param window Display window for rendering
+     * @param window Display a window for rendering
      * @param viewStart Starting coordinates for board display
      * @param whitePlayerName Name of white player (max 32 chars)
      * @param blackPlayerName Name of black player (max 32 chars)
@@ -66,21 +60,10 @@ public class Board{
             Point viewStart,
             String whitePlayerName,
             String blackPlayerName) {
-        // Validate board size
-        if(height < MIN_BOARD_SIZE || height > MAX_BOARD_SIZE ||
-            width < MIN_BOARD_SIZE || width > MAX_BOARD_SIZE ) {
-            throw new IllegalArgumentException("Invalid board size: too large or too small");
-        }
 
-        this.height = height;
-        this.width = width;
-        this.round = 1;
         this.rule = rule;
-        this.currentPlayer = Player.BLACK;
-        this.pieceGrid = new Piece[height+2][width+2]; // +2 for border
-
-        // Initialize game grid according to rules
-        this.rule.getGameRule().initializeGrid(pieceGrid);
+        this.statistics = new GameStatistics(height, width, whitePlayerName, blackPlayerName);
+        this.rule.getGameRule().initializeGrid(this.statistics); /* Initialize game grid according to rules */
 
         // Set up display views
         this.window = window;
@@ -88,13 +71,6 @@ public class Board{
         if(this.boardView == null) { throw new IllegalArgumentException("Unable to draw board: Space occupied"); }
         this.statisticsView = window.createView(new Rect(viewStart.y, viewStart.y+height+1, viewStart.x+width*2+1, viewStart.x+width*2+ULTIMATE_ANSWER));
         if(this.statisticsView == null) { throw new IllegalArgumentException("Unable to draw statistics: Space occupied"); }
-
-        // Validate player names
-        if(whitePlayerName.length() > 32 || blackPlayerName.length() > 32) {
-            throw new IllegalArgumentException("Unable to initialize name: too long");
-        }
-        this.whitePlayerName = whitePlayerName;
-        this.blackPlayerName = blackPlayerName;
 
         // Initial setup
         initializeCanvas();
@@ -106,10 +82,10 @@ public class Board{
     /**
      * Gets brief information about the board.
      *
-     * @return String in format "ruleName heightxwidth"
+     * @return String in format "ruleName <height>x<width>"
      */
     public String getBriefInformation() {
-        return rule.getName() + " " + height + "x" + width;
+        return rule.getName() + " " + statistics.getHeight() + "x" + statistics.getWidth();
     }
 
     /**
@@ -127,7 +103,7 @@ public class Board{
      * @return White player name
      */
     public String getWhitePlayerName() {
-        return whitePlayerName;
+        return statistics.getWhitePlayerName();
     }
     /**
      * Gets the black player's name.
@@ -135,7 +111,7 @@ public class Board{
      * @return Black player name
      */
     public String getBlackPlayerName() {
-        return blackPlayerName;
+        return statistics.getBlackPlayerName();
     }
 
     /**
@@ -153,7 +129,7 @@ public class Board{
      * @return String describing game state
      */
     public String toString() {
-        return rule.getName() + " " + height + "x" + width + " " + switch(winner) {
+        return rule.getName() + " " + statistics.getHeight() + "x" + statistics.getWidth() + " " + switch(statistics.getWinner()) {
             case null -> "ongoing";
             case NONE -> "draw";
             case BLACK -> "black win";
@@ -167,15 +143,15 @@ public class Board{
      * @return true if the game has ended, false otherwise
      */
     public boolean isGameOver() {
-        return winner != null;
+        return statistics.getWinner() != null;
     }
 
     /**
      * Gets the winner of the game.
      *
-     * @return Winning player, or null if game isn't over
+     * @return Winning player, or null if the game isn't over
      */
-    public Player getWinner() { return winner; }
+    public Player getWinner() { return statistics.getWinner(); }
 
     /**
      * Attempts to place a piece at the specified position.
@@ -185,28 +161,22 @@ public class Board{
      */
     public boolean placePiece(Move move) {
         // Validate move coordinates
-        if( move.end.x <= 0 || move.end.x > width ||
-                move.end.y <= 0 || move.end.y > height ||
-            !this.rule.getGameRule().placePieceValidationCheck(move, currentPlayer, pieceGrid)) {
+        if(!this.rule.getGameRule().placePieceValidationCheck(move, statistics)) {
             return false;
         }
 
         // Execute move
-        this.rule.getGameRule().placePiece(move, currentPlayer, pieceGrid);
+        this.rule.getGameRule().placePiece(move, statistics);
 
         // Switch players
-        currentPlayer = this.rule.getGameRule().nextPlayer(currentPlayer, pieceGrid);
-        if(currentPlayer == Player.BLACK) {
-            round++;
-        }
+        this.rule.getGameRule().nextPlayer(statistics);
 
         // Update display
         updateBoard();
 
         // Check for game over
-        if(this.rule.getGameRule().gameOverCheck(currentPlayer, pieceGrid)) {
-            this.winner = this.rule.getGameRule().gameWonCheck(currentPlayer, pieceGrid);
-            displayWinnerInfo(winner);
+        if(this.rule.getGameRule().gameOverCheck(statistics)) {
+            displayWinnerInfo(statistics.getWinner());
         } else {
             showValidMoves();
             displayPlayerInfo();
@@ -228,16 +198,16 @@ public class Board{
         Point point = new Point(0, 0);
 
         // Show column numbers (1-9 then a-z)
-        for(point.y = 1; point.y <= height && point.y <= 9; point.y++) {
+        for(point.y = 1; point.y <= statistics.getHeight() && point.y <= 9; point.y++) {
             boardView.setPixel(point, new PixelImplConsole((char)('0'+point.y)));
         }
-        for(; point.y <= height; point.y++) {
+        for(; point.y <= statistics.getHeight(); point.y++) {
             boardView.setPixel(point, new PixelImplConsole((char)('a'+point.y-10)));
         }
 
         // Show row letters (A-Z)
         point.y = 0;
-        for(int j = 1; j <= width; j++) {
+        for(int j = 1; j <= statistics.getWidth(); j++) {
             point.x = 2*j-1;
             boardView.setPixel(point, new PixelImplConsole((char)('A'+j-1)));
         }
@@ -248,10 +218,10 @@ public class Board{
      */
     private void updateBoard() {
         Point point = new Point(0, 0);
-        for(int i = 1; i <= height; i++) {
-            for(int j = 1; j <= width; j++) {
+        for(int i = 1; i <= statistics.getHeight(); i++) {
+            for(int j = 1; j <= statistics.getWidth(); j++) {
                 point.set(2*j-1,i);
-                boardView.setPixel(point, pieceGrid[i][j].getPixel());
+                boardView.setPixel(point, statistics.getPieceGrid()[i][j].getPixel());
             }
         }
     }
@@ -261,12 +231,14 @@ public class Board{
      */
     private void showValidMoves() {
         Point viewPoint = new Point(0, 0);
-        Move move = new Move(new Point(0,0), new Point(0,0), currentPlayer);
-        for(move.end.y = 1; move.end.y <= height; move.end.y++) {
+        Piece piece = new PieceImplMonochrome();
+        piece.setPlayer(statistics.getCurrentPlayer());
+        Move move = new Move(new Point(0,0), new Point(0,0), piece);
+        for(move.end.y = 1; move.end.y <= statistics.getHeight(); move.end.y++) {
             viewPoint.y++;
             viewPoint.x = 1;
-            for(move.end.x = 1; move.end.x <= width; move.end.x++) {
-                if(this.rule.getGameRule().placePieceValidationCheck(move, currentPlayer, pieceGrid)) {
+            for(move.end.x = 1; move.end.x <= statistics.getWidth(); move.end.x++) {
+                if(this.rule.getGameRule().placePieceValidationCheck(move, statistics)) {
                     boardView.setPixel(viewPoint, PieceImplMonochrome.VALID_MOVE);
                 }
                 viewPoint.x+=2;
@@ -281,16 +253,16 @@ public class Board{
         // Calculate vertical alignment
         int align;
         if(rule.showRound()) {
-            align = (height-3)/2;
+            align = (statistics.getHeight()-3)/2;
         } else {
-            align = (height-2)/2;
+            align = (statistics.getHeight()-2)/2;
         }
 
         // White player info
         {
-            StringBuilder buf = new StringBuilder("Player[" + whitePlayerName + "] ");
+            StringBuilder buf = new StringBuilder("Player[" + statistics.getWhitePlayerName() + "] ");
 
-            if(currentPlayer == Player.WHITE) {
+            if(statistics.getCurrentPlayer() == Player.WHITE) {
                 buf.append(((PixelImplConsole) PieceImplMonochrome.WHITE_PIECE).get());
             } else {
                 buf.append(" ");
@@ -299,7 +271,7 @@ public class Board{
             buf.append(" ");
 
             {
-                int whiteScore = rule.getGameRule().getWhiteScore(pieceGrid);
+                int whiteScore = rule.getGameRule().getWhiteScore(statistics);
                 if(whiteScore != -1) {
                     buf.append(whiteScore);
                 }
@@ -310,9 +282,9 @@ public class Board{
 
         // Black player info
         {
-            StringBuilder buf = new StringBuilder("Player[" + blackPlayerName + "] ");
+            StringBuilder buf = new StringBuilder("Player[" + statistics.getBlackPlayerName() + "] ");
 
-            if(currentPlayer == Player.BLACK) {
+            if(statistics.getCurrentPlayer() == Player.BLACK) {
                 buf.append(((PixelImplConsole) PieceImplMonochrome.BLACK_PIECE).get());
             } else {
                 buf.append(" ");
@@ -321,7 +293,7 @@ public class Board{
             buf.append(" ");
 
             {
-                int blackScore = rule.getGameRule().getBlackScore(pieceGrid);
+                int blackScore = rule.getGameRule().getBlackScore(statistics);
                 if(blackScore != -1) {
                     buf.append(blackScore);
                 }
@@ -330,10 +302,10 @@ public class Board{
             statisticsView.println(align+1, buf.toString());
         }
 
-        statisticsView.println(align+2, "Current Player: " + currentPlayer.name().toLowerCase());
+        statisticsView.println(align+2, "Current Player: " + statistics.getCurrentPlayer().name().toLowerCase());
 
         if(rule.showRound()) {
-            statisticsView.println(align+3, "Current Round: " + round);
+            statisticsView.println(align+3, "Current Round: " + statistics.getRound());
         }
     }
 
@@ -343,22 +315,22 @@ public class Board{
      * @param type The winning player (WHITE, BLACK, or NONE for draw)
      */
     private void displayWinnerInfo(Player type) {
-        int align = (height+1-3)/2;
+        int align = (statistics.getHeight()+1-3)/2;
         switch(type) {
             case Player.WHITE:
                 statisticsView.println(align, "White Wins");
-                statisticsView.println(align+1, "Good game " + whitePlayerName);
+                statisticsView.println(align+1, "Good game " + statistics.getWhitePlayerName());
                 break;
             case Player.BLACK:
                 statisticsView.println(align, "Black Wins");
-                statisticsView.println(align+1, "Good game " + blackPlayerName);
+                statisticsView.println(align+1, "Good game " + statistics.getBlackPlayerName());
                 break;
             case Player.NONE:
                 statisticsView.println(align, "Draw");
                 statisticsView.println(align+1, "Cool");
                 break;
         }
-        statisticsView.println(align+2, "White " + rule.getGameRule().getWhiteScore(pieceGrid)
-                + ": Black " + rule.getGameRule().getBlackScore(pieceGrid));
+        statisticsView.println(align+2, "White " + rule.getGameRule().getWhiteScore(statistics)
+                + ": Black " + rule.getGameRule().getBlackScore(statistics));
     }
 }

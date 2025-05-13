@@ -14,6 +14,14 @@ public final class PieceImplMonochrome extends Piece {
         super();
     }
 
+    @Override
+    public void setPiece(Piece piece) {
+        if(!(piece instanceof PieceImplMonochrome pieceImplMonochrome)) {
+            throw new IllegalArgumentException();
+        }
+        setPlayer(pieceImplMonochrome.getPlayer());
+    }
+
     /**
      * Get the pixel form of this piece
      * @return Pixel

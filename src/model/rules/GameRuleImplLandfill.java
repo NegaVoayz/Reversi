@@ -2,6 +2,7 @@ package model.rules;
 
 import model.pieces.Piece;
 import model.pieces.PieceImplMonochrome;
+import model.structs.GameStatistics;
 import model.structs.Move;
 import model.structs.Point;
 import model.enums.Player;
@@ -20,79 +21,77 @@ public class GameRuleImplLandfill extends AbstractGameRuleMonochrome {
      * allocate pieceGrid and set the start pieces
      */
     @Override
-    public void initializeGrid(Piece[][] pieceGrid) {
-        basicInitializeGrid(pieceGrid);
+    public void initializeGrid(GameStatistics statistics) {
+        basicInitializeGrid(statistics);
 
-        pieceGrid[pieceGrid.length/2-1][pieceGrid[0].length/2-1].setPlayer(Player.WHITE);
-        pieceGrid[pieceGrid.length/2-1][pieceGrid[0].length/2].setPlayer(Player.BLACK);
-        pieceGrid[pieceGrid.length/2][pieceGrid[0].length/2-1].setPlayer(Player.BLACK);
-        pieceGrid[pieceGrid.length/2][pieceGrid[0].length/2].setPlayer(Player.WHITE);
+        statistics.getPieceGrid()[statistics.getHeight()/2][statistics.getWidth()/2].setPlayer(Player.WHITE);
+        statistics.getPieceGrid()[statistics.getHeight()/2+1][statistics.getWidth()/2].setPlayer(Player.BLACK);
+        statistics.getPieceGrid()[statistics.getHeight()/2][statistics.getWidth()/2+1].setPlayer(Player.BLACK);
+        statistics.getPieceGrid()[statistics.getHeight()/2+1][statistics.getWidth()/2+1].setPlayer(Player.WHITE);
     }
 
 
     /**
-     * Check whether it is a valid move to place piece here
-     * @param move position of the move
-     * @param player the player of the move
-     * @param pieceGrid the board
+     * Check whether it is a valid move to place a piece here
+     *
+     * @param move       position of the move
+     * @param statistics the board statistics
      * @return true when valid
      */
     @Override
-    public boolean placePieceValidationCheck(Move move, Player player, Piece[][] pieceGrid) {
-        if( ! (pieceGrid[move.end.y][move.end.x] instanceof PieceImplMonochrome pieceImplMonochrome) ) {
+    public boolean placePieceValidationCheck(Move move, GameStatistics statistics) {
+        if( ! (statistics.getPieceGrid()[move.end.y][move.end.x] instanceof PieceImplMonochrome pieceImplMonochrome)
+                || !(move.piece instanceof PieceImplMonochrome) ) {
             throw new IllegalArgumentException("Invalid Piece implementation");
         }
         return pieceImplMonochrome.getPlayer() == Player.NONE;
     }
 
     @Override
-    public Player nextPlayer(Player player, Piece[][] pieceGrid) {
-        Player nextPlayer;
-        if(player == Player.WHITE) {
-            nextPlayer = Player.BLACK;
-        } else {
-            nextPlayer = Player.WHITE;
+    public void nextPlayer(GameStatistics statistics) {
+        statistics.switchPlayer();
+        if(checkStale(statistics)) {
+            statistics.switchPlayer();
         }
-        if(gameOverCheck(nextPlayer, pieceGrid)) {
-            return player;
-        }
-        return nextPlayer;
     }
 
     @Override
-    public boolean placePiece(Move move, Player player, Piece[][] pieceGrid) {
-        if(!placePieceValidationCheck(move, player, pieceGrid)) {
+    public boolean placePiece(Move move, GameStatistics statistics) {
+        if(!placePieceValidationCheck(move, statistics)) {
             return false;
         }
-        pieceGrid[move.end.y][move.end.x].setPlayer(player);
+        statistics.getPieceGrid()[move.end.y][move.end.x].setPlayer(statistics.getCurrentPlayer());
+        move.piece.setPlayer(statistics.getCurrentPlayer());
+        statistics.addMove(move);
         return true;
     }
 
     @Override
-    public boolean gameOverCheck(Player currentPlayer, Piece[][] pieceGrid) {
+    public boolean gameOverCheck(GameStatistics statistics) {
+        boolean gameOver = checkStale(statistics);
+        if(gameOver) { statistics.setWinner(Player.NONE); }
+        return gameOver;
+    }
+
+    @Override
+    public int getWhiteScore(GameStatistics statistics) {
+        return -1;
+    }
+
+    @Override
+    public int getBlackScore(GameStatistics statistics) {
+        return -1;
+    }
+
+    private boolean checkStale(GameStatistics statistics) {
         Point boardPoint = new Point(0, 0);
-        for(boardPoint.y = 1; boardPoint.y < pieceGrid.length-1; boardPoint.y++) {
-            for(boardPoint.x = 1; boardPoint.x < pieceGrid[0].length-1; boardPoint.x++) {
-                if( pieceGrid[boardPoint.y][boardPoint.x].getPlayer() == Player.NONE ) {
+        for(boardPoint.y = 1; boardPoint.y <= statistics.getHeight(); boardPoint.y++) {
+            for(boardPoint.x = 1; boardPoint.x <= statistics.getWidth(); boardPoint.x++) {
+                if( statistics.getPieceGrid()[boardPoint.y][boardPoint.x].getPlayer() == Player.NONE ) {
                     return false;
                 }
             }
         }
         return true;
-    }
-
-    @Override
-    public Player gameWonCheck(Player currentPlayer, Piece[][] pieceGrid) {
-        return Player.NONE;
-    }
-
-    @Override
-    public int getWhiteScore(Piece[][] pieceGrid) {
-        return -1;
-    }
-
-    @Override
-    public int getBlackScore(Piece[][] pieceGrid) {
-        return -1;
     }
 }

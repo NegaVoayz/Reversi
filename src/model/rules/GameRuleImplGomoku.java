@@ -3,6 +3,7 @@ package model.rules;
 import model.pieces.Piece;
 import model.pieces.PieceImplMonochrome;
 import model.enums.Player;
+import model.structs.GameStatistics;
 import model.structs.Move;
 import model.structs.Point;
 
@@ -22,91 +23,79 @@ public class GameRuleImplGomoku extends AbstractGameRuleMonochrome {
     };
 
     @Override
-    public void initializeGrid(Piece[][] pieceGrid) {
-        basicInitializeGrid(pieceGrid);
+    public void initializeGrid(GameStatistics statistics) {
+        basicInitializeGrid(statistics);
     }
 
     @Override
-    public boolean placePieceValidationCheck(Move move, Player player, Piece[][] pieceGrid) {
-        if( ! (pieceGrid[move.end.y][move.end.x] instanceof PieceImplMonochrome pieceImplMonochrome) ) {
+    public boolean placePieceValidationCheck(Move move, GameStatistics statistics) {
+        if( ! (statistics.getPieceGrid()[move.end.y][move.end.x] instanceof PieceImplMonochrome pieceImplMonochrome)
+                || !(move.piece instanceof PieceImplMonochrome) ) {
             throw new IllegalArgumentException("Invalid Piece implementation");
+        }
+        if( move.end.x <= 0 || move.end.x > statistics.getHeight() ||
+                move.end.y <= 0 || move.end.y > statistics.getWidth() ) {
+            return false;
         }
         return pieceImplMonochrome.getPlayer() == Player.NONE;
     }
 
     @Override
-    public Player nextPlayer(Player player, Piece[][] pieceGrid) {
-        Player nextPlayer;
-        if(player == Player.WHITE) {
-            nextPlayer = Player.BLACK;
-        } else {
-            nextPlayer = Player.WHITE;
-        }
-        return nextPlayer;
+    public void nextPlayer(GameStatistics statistics) {
+        statistics.switchPlayer();
     }
 
     @Override
-    public boolean placePiece(Move move, Player player, Piece[][] pieceGrid) {
-        if(!placePieceValidationCheck(move, player, pieceGrid)) {
+    public boolean placePiece(Move move, GameStatistics statistics) {
+        if(!placePieceValidationCheck(move, statistics)) {
             return false;
         }
-        pieceGrid[move.end.y][move.end.x].setPlayer(player);
+        statistics.getPieceGrid()[move.end.y][move.end.x].setPlayer(statistics.getCurrentPlayer());
+        move.piece.setPlayer(statistics.getCurrentPlayer());
+        statistics.addMove(move);
         return true;
     }
 
     @Override
-    public boolean gameOverCheck(Player currentPlayer, Piece[][] pieceGrid) {
+    public boolean gameOverCheck(GameStatistics statistics) {
         boolean full = true;
         Point boardPoint = new Point(0, 0);
-        for(boardPoint.y = 1; boardPoint.y < pieceGrid.length-1; boardPoint.y++) {
-            for(boardPoint.x = 1; boardPoint.x < pieceGrid[0].length-1; boardPoint.x++) {
-                if( pieceGrid[boardPoint.y][boardPoint.x].getPlayer() == Player.NONE ) {
+        for(boardPoint.y = 1; boardPoint.y <= statistics.getHeight(); boardPoint.y++) {
+            for(boardPoint.x = 1; boardPoint.x <= statistics.getWidth(); boardPoint.x++) {
+                if( statistics.getPieceGrid()[boardPoint.y][boardPoint.x].getPlayer() == Player.NONE ) {
                     full = false;
                 } else {
-                    if(checkConnects(boardPoint, pieceGrid) >= 5) {
+                    if(checkConnects(boardPoint, statistics) >= 5) {
+                        statistics.setWinner(statistics.getPieceGrid()[boardPoint.y][boardPoint.x].getPlayer());
                         return true;
                     }
                 }
             }
         }
+        statistics.setWinner(Player.NONE);
         return full;
     }
 
     @Override
-    public Player gameWonCheck(Player currentPlayer, Piece[][] pieceGrid) {
-        Point boardPoint = new Point(0, 0);
-        for(boardPoint.y = 1; boardPoint.y < pieceGrid.length-1; boardPoint.y++) {
-            for(boardPoint.x = 1; boardPoint.x < pieceGrid[0].length-1; boardPoint.x++) {
-                if( pieceGrid[boardPoint.y][boardPoint.x].getPlayer() != Player.NONE ) {
-                    if(checkConnects(boardPoint, pieceGrid) >= 5) {
-                        return pieceGrid[boardPoint.y][boardPoint.x].getPlayer();
-                    }
-                }
-            }
-        }
-        return Player.NONE;
+    public int getWhiteScore(GameStatistics statistics) {
+        return statistics.getWinner() == Player.WHITE ? 1:0;
     }
 
     @Override
-    public int getWhiteScore(Piece[][] pieceGrid) {
-        return gameWonCheck(Player.NONE, pieceGrid) == Player.WHITE ? 1:0;
+    public int getBlackScore(GameStatistics statistics) {
+        return statistics.getWinner() == Player.BLACK ? 1:0;
     }
 
-    @Override
-    public int getBlackScore(Piece[][] pieceGrid) {
-        return gameWonCheck(Player.NONE, pieceGrid) == Player.BLACK ? 1:0;
-    }
-
-    private int checkConnects(Point point, Piece[][] pieceGrid) {
+    private int checkConnects(Point point, GameStatistics statistics) {
         Point temp = new Point(0,0);
-        Player currentPlayer = pieceGrid[point.y][point.x].getPlayer();
+        Player currentPlayer = statistics.getPieceGrid()[point.y][point.x].getPlayer();
         int maxConnectCount = 1;
 
         for(Point direction : DIRECTIONS) {
             int connectCount = 1;
             temp.set(point)
                     .translate(direction);
-            while(pieceGrid[temp.y][temp.x].getPlayer() == currentPlayer) {
+            while(statistics.getPieceGrid()[temp.y][temp.x].getPlayer() == currentPlayer) {
                 temp.translate(direction);
                 connectCount++;
             }
