@@ -1,7 +1,7 @@
 package model.pieces;
 
-import view.Pixel;
-import view.PixelImplConsole;
+import view.console.Pixel;
+import view.console.PixelImplConsole;
 
 public final class PieceImplMonochrome extends Piece {
     

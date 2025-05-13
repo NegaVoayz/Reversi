@@ -1,4 +1,4 @@
-package view;
+package view.console;
 
 import model.structs.Point;
 import model.structs.Rect;

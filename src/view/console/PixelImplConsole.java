@@ -1,4 +1,4 @@
-package view;
+package view.console;
 
 public class PixelImplConsole implements Pixel {
     // use string to contain multibyte character

@@ -1,4 +1,4 @@
-package view;
+package view.console;
 
 public interface Pixel {
     int set(Pixel pix);

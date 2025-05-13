@@ -6,8 +6,8 @@ import model.factories.BoardFactory;
 import model.rules.RuleImplGomoku;
 import model.rules.RuleImplLandfill;
 import model.rules.RuleImplReversi;
-import model.structs.Rect;
-import view.Screen;
+import view.Displayer;
+import view.console.Screen;
 
 import java.util.ArrayList;
 import java.util.InputMismatchException;
@@ -42,15 +42,14 @@ public class InitializationController {
      *
      * @param scanner Input scanner for user interactions
      * @param boards Collection to store initialized boards
-     * @param screen Display screen for rendering game elements
+     * @param displayer Display screen for rendering game elements
      */
-    public InitializationController(Scanner scanner, ArrayList<Board> boards, Screen screen) {
+    public InitializationController(Scanner scanner, ArrayList<Board> boards, Displayer displayer) {
         this.scanner = scanner;
         this.boards = boards;
         this.boardFactory = BoardFactory
                 .create()
-                .setScreen(screen)
-                .setWindowRect(GameController.BOARD_RECT)
+                .setDisplayer(displayer)
                 .useDefaultVerticalAlign()
                 .useDefaultHorizontalAlign();
     }

@@ -1,10 +1,13 @@
 package model.rules;
 
+import model.enums.GameType;
 import model.pieces.Piece;
 import model.structs.GameStatistics;
 import model.structs.Move;
 
 public interface GameRule {
+
+    GameType getGameType();
 
     void initializeGrid(GameStatistics statistics);
 

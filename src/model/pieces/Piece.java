@@ -1,7 +1,7 @@
 package model.pieces;
 
 import model.enums.Player;
-import view.Pixel;
+import view.console.Pixel;
 
 public abstract class Piece {
 

@@ -8,9 +8,10 @@ import model.rules.RuleImplReversi;
 import model.structs.Move;
 import model.enums.Player;
 import model.structs.Rect;
-import view.Screen;
-import view.View;
-import view.Window;
+import view.Displayer;
+import view.console.Screen;
+import view.console.View;
+import view.console.Window;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -29,20 +30,12 @@ import java.util.Queue;
  * </ul>
  */
 public class GameController {
-    // Board Display Area on Screen (y1, y2, x1, x2)
-    public static final Rect BOARD_RECT = new Rect(0, 10, 0, 80);
-
-    // Game List Display Area on Screen (y1, y2, x1, x2)
-    public static final Rect BOARD_LIST_RECT = new Rect(0, 10, 80, 120);
-
-    // Game List Display Size (0, ySize, 0, xSize)
-    public static final Rect BOARD_LIST_SIZE = new Rect(0, 10, 0, 32);
 
     // All games
     private final ArrayList<Board> boards;
 
     // Current active board index
-    private int currentBoardNo;
+    private int currentBoardIdx;
 
     // Game Result Statistics
     private int gameOverCount;
@@ -54,44 +47,42 @@ public class GameController {
 
     private final BoardFactory boardFactory;
 
-    // Display Window
-    private final Window boardsWindow;
-    private final View boardsView;
+    // Display
+    private final Displayer displayer;
+
 
     /**
      * Initialize GameController
      *
      * @param boards initial game set
-     * @param screen game screen for display
+     * @param displayer game screen for display
      */
-    public GameController(ArrayList<Board> boards, Screen screen) {
+    public GameController(ArrayList<Board> boards, Displayer displayer) {
         this.boards = boards;
         this.gameOverCount = 0;
         this.whiteWinCount = 0;
         this.blackWinCount = 0;
-        this.currentBoardNo = 0;
+        this.currentBoardIdx = 0;
         this.whitePlayerName = boards.getFirst().getWhitePlayerName();
         this.blackPlayerName = boards.getFirst().getBlackPlayerName();
         this.boardsSelected = new LinkedList<>();
-        this.boardsWindow = screen.createWindow(BOARD_LIST_RECT);
-        this.boardsView = boardsWindow.createView(BOARD_LIST_SIZE);
+        this.displayer = displayer;
         boardFactory = BoardFactory
                 .create()
                 .setWhitePlayerName(whitePlayerName)
                 .setBlackPlayerName(blackPlayerName)
-                .setScreen(screen)
-                .setWindowRect(BOARD_RECT)
+                .setDisplayer(displayer)
                 .useDefaultBoardSizeCol()
                 .useDefaultBoardSizeRow()
                 .useDefaultVerticalAlign()
                 .useDefaultHorizontalAlign();
-        setBoardsWindow();
+        displayer.updateBoards(boards, currentBoardIdx);
         showBoard();
     }
 
     public void showBoard() {
-        boards.get(currentBoardNo).show();
-        boardsView.paint();
+        boards.get(currentBoardIdx).show();
+        displayer.display();
     }
 
     public boolean isAllGameOver() {
@@ -132,8 +123,8 @@ public class GameController {
             System.out.println("Invalid board number: " + newBoardNo);
             return false;
         }
-        this.currentBoardNo = newBoardNo - 1;
-        setBoardsWindow();
+        this.currentBoardIdx = newBoardNo - 1;
+        displayer.updateBoards(boards, currentBoardIdx);
         showBoard();
         return true;
     }
@@ -146,7 +137,7 @@ public class GameController {
      * @return this entity for method chain
      */
     protected GameController parseMove(String input) {
-        tempMove = boards.get(currentBoardNo).getInputRule().ParseInput(input);
+        tempMove = boards.get(currentBoardIdx).getInputRule().ParseInput(input);
         return this;
     }
 
@@ -232,7 +223,7 @@ public class GameController {
      */
     protected boolean createBoard() {
         boards.add(boardFactory.createBoard());
-        setBoardsWindow();
+        displayer.updateBoards(boards, currentBoardIdx);
         showBoard();
         return true;
     }
@@ -253,7 +244,7 @@ public class GameController {
         boardsSelected.clear();
         String[] tokens = selector.split("\\s+");
         if(tokens[0].compareToIgnoreCase("current") == 0) {
-            boardsSelected.add(currentBoardNo);
+            boardsSelected.add(currentBoardIdx);
             return this;
         }
         selectAllBoards();
@@ -305,63 +296,30 @@ public class GameController {
             return false;
         }
 
-        if( boards.get(currentBoardNo).isGameOver() ) {
+        if( boards.get(currentBoardIdx).isGameOver() ) {
             System.out.println("Game Over!");
             return false;
         }
 
-        if( !boards.get(currentBoardNo).placePiece(move) ) {
+        if( !boards.get(currentBoardIdx).placePiece(move) ) {
             System.out.println("Invalid Move");
             return false;
         }
 
         // the game over process
-        if(boards.get(currentBoardNo).isGameOver() ) {
-            if(boards.get(currentBoardNo).getWinner() == Player.WHITE) {
+        if(boards.get(currentBoardIdx).isGameOver() ) {
+            if(boards.get(currentBoardIdx).getWinner() == Player.WHITE) {
                 whiteWinCount++;
-            } else if(boards.get(currentBoardNo).getWinner() == Player.BLACK) {
+            } else if(boards.get(currentBoardIdx).getWinner() == Player.BLACK) {
                 blackWinCount++;
             }
             gameOverCount++;
-            setBoardsWindow();
+            displayer.updateBoards(boards, currentBoardIdx);
         }
 
         // update view since the board has changed.
         showBoard();
 
         return true;
-    }
-
-    // update boards list window
-    private void setBoardsWindow() {
-        // calculate the start position
-        // align current board in the middle
-        int startY = 1;
-        int startBoard = currentBoardNo-3;
-        if(startBoard < 0) {
-            startY = 1-startBoard;
-            startBoard = 0;
-        }
-
-        boardsView.clearView();
-
-        // show omit symbol if the boards above exceeded the window
-        if(currentBoardNo-3 > 0) {
-            boardsView.println(0,"    ...");
-        }
-
-        // show omit symbol if the boards below exceeded the window
-        if(currentBoardNo+5 < boards.size()) {
-            boardsView.println(9,"    ...");
-        }
-
-        // display the game list visible
-        for(int i = startY, j = startBoard; i < 9 && j < boards.size(); i++, j++) {
-            if(j == currentBoardNo) {
-                boardsView.println(i, "--> Board " + (j + 1) + ": " + boards.get(j).getBriefInformation());
-            } else {
-                boardsView.println(i, "    Board " + (j + 1) + ": " + boards.get(j).getBriefInformation());
-            }
-        }
     }
 }

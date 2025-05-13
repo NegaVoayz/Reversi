@@ -40,6 +40,10 @@ public class GameRuleImplLandfill extends AbstractGameRuleMonochrome {
      */
     @Override
     public boolean placePieceValidationCheck(Move move, GameStatistics statistics) {
+        if( move.end.x <= 0 || move.end.x > statistics.getHeight() ||
+                move.end.y <= 0 || move.end.y > statistics.getWidth() ) {
+            return false;
+        }
         if( ! (statistics.getPieceGrid()[move.end.y][move.end.x] instanceof PieceImplMonochrome pieceImplMonochrome)
                 || !(move.piece instanceof PieceImplMonochrome) ) {
             throw new IllegalArgumentException("Invalid Piece implementation");
