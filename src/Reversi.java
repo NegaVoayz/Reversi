@@ -5,7 +5,8 @@ import controller.GameController;
 import controller.InitializationController;
 import controller.InputController;
 import model.Board;
-import view.Displayer;
+import view.renderer.Renderer;
+import view.renderer.RendererFactory;
 
 public class Reversi{
 
@@ -17,13 +18,13 @@ public class Reversi{
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         ArrayList<Board> boards = new ArrayList<>();
-        Displayer displayer = Displayer.getDisplayerImplConsole();
+        Renderer renderer = RendererFactory.getRenderer("console");
 
         // initialize game
-        InitializationController initializationController = new InitializationController(scanner, boards, displayer);
+        InitializationController initializationController = new InitializationController(scanner, boards);
         initializationController.initialize();
 
-        GameController gameController = new GameController(boards, displayer);
+        GameController gameController = new GameController(boards, renderer);
         InputController inputController = new InputController(scanner, gameController);
 
         // main loop

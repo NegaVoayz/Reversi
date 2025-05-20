@@ -1,17 +1,16 @@
 package controller;
 
 import model.Board;
+import model.exceptions.GameException;
 import model.factories.BoardFactory;
+import model.rules.RuleImplBomb;
 import model.rules.RuleImplGomoku;
 import model.rules.RuleImplLandfill;
 import model.rules.RuleImplReversi;
 import model.structs.Move;
 import model.enums.Player;
-import model.structs.Rect;
-import view.Displayer;
-import view.console.Screen;
-import view.console.View;
-import view.console.Window;
+import view.components.*;
+import view.renderer.Renderer;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -48,16 +47,17 @@ public class GameController {
     private final BoardFactory boardFactory;
 
     // Display
-    private final Displayer displayer;
+    private final Renderer renderer;
+    private final DisplayBlock mainView ;
 
 
     /**
      * Initialize GameController
      *
      * @param boards initial game set
-     * @param displayer game screen for display
+     * @param renderer game renderer for display
      */
-    public GameController(ArrayList<Board> boards, Displayer displayer) {
+    public GameController(ArrayList<Board> boards, Renderer renderer) {
         this.boards = boards;
         this.gameOverCount = 0;
         this.whiteWinCount = 0;
@@ -66,23 +66,25 @@ public class GameController {
         this.whitePlayerName = boards.getFirst().getWhitePlayerName();
         this.blackPlayerName = boards.getFirst().getBlackPlayerName();
         this.boardsSelected = new LinkedList<>();
-        this.displayer = displayer;
+        this.renderer = renderer;
         boardFactory = BoardFactory
                 .create()
                 .setWhitePlayerName(whitePlayerName)
                 .setBlackPlayerName(blackPlayerName)
-                .setDisplayer(displayer)
                 .useDefaultBoardSizeCol()
                 .useDefaultBoardSizeRow()
                 .useDefaultVerticalAlign()
                 .useDefaultHorizontalAlign();
-        displayer.updateBoards(boards, currentBoardIdx);
+        this.mainView  = new DisplayBlock();
+        mainView.addChild(new DisplayBlock());
+        mainView.addChild(new DisplayBlock());
+        updateBoards(boards, currentBoardIdx);
         showBoard();
     }
 
     public void showBoard() {
-        boards.get(currentBoardIdx).show();
-        displayer.display();
+        mainView.changeChild(0, boards.get(currentBoardIdx).show());
+        renderer.render(mainView );
     }
 
     public boolean isAllGameOver() {
@@ -124,7 +126,7 @@ public class GameController {
             return false;
         }
         this.currentBoardIdx = newBoardNo - 1;
-        displayer.updateBoards(boards, currentBoardIdx);
+        updateBoards(boards, currentBoardIdx);
         showBoard();
         return true;
     }
@@ -146,7 +148,7 @@ public class GameController {
      *
      * @return true if succeeded
      */
-    protected boolean placePiece() {
+    protected boolean placePiece() throws GameException {
         if(tempMove == null) {
             return false;
         }
@@ -173,6 +175,9 @@ public class GameController {
                 break;
             case RuleImplGomoku.name:
                 boardFactory.setRule(RuleImplGomoku.getRule());
+                break;
+            case RuleImplBomb.name:
+                boardFactory.setRule(RuleImplBomb.getRule());
                 break;
             default:
                 throw new IllegalArgumentException("No rule named " + tokens[0] + ". Try 'reversi' or 'peace'.");
@@ -223,7 +228,7 @@ public class GameController {
      */
     protected boolean createBoard() {
         boards.add(boardFactory.createBoard());
-        displayer.updateBoards(boards, currentBoardIdx);
+        updateBoards(boards, currentBoardIdx);
         showBoard();
         return true;
     }
@@ -291,7 +296,7 @@ public class GameController {
      *
      * @return True if the position is valid and the piece is placed successfully
      */
-    private boolean placePiece(Move move) {
+    private boolean placePiece(Move move) throws GameException {
         if( move == null ) {
             return false;
         }
@@ -314,12 +319,46 @@ public class GameController {
                 blackWinCount++;
             }
             gameOverCount++;
-            displayer.updateBoards(boards, currentBoardIdx);
+            updateBoards(boards, currentBoardIdx);
         }
 
         // update view since the board has changed.
         showBoard();
 
         return true;
+    }
+
+    public void updateBoards(ArrayList<Board> boards, int currentBoardIdx) {
+        DisplayBlock gameListView = new DisplayBlock();
+        gameListView.setChildLayout(ChildLayout.UP_TO_DOWN);
+        // calculate the start position
+        // align current board in the middle
+        int startY = 1;
+        int startBoard = currentBoardIdx-3;
+        if(startBoard < 0) {
+            startY = 1-startBoard;
+            startBoard = 0;
+        }
+
+        // show omit symbol if the boards above exceeded the window
+        if(currentBoardIdx-3 > 0) {
+            gameListView.addChild(new TextBlock("    ..."));
+        }
+
+        // display the game list visible
+        for(int i = startY, j = startBoard; i < 9 && j < boards.size(); i++, j++) {
+            if(j == currentBoardIdx) {
+                gameListView.addChild(new TextBlock("--> Board " + (j + 1) + ": " + boards.get(j).getBriefInformation()));
+            } else {
+                gameListView.addChild(new TextBlock("    Board " + (j + 1) + ": " + boards.get(j).getBriefInformation()));
+            }
+        }
+
+        // show omit symbol if the boards below exceeded the window
+        if(currentBoardIdx+5 < boards.size()) {
+            gameListView.addChild(new TextBlock("    ..."));
+        }
+
+        mainView.changeChild(1, gameListView);
     }
 }

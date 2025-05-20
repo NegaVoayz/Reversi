@@ -1,14 +1,10 @@
 package model.factories;
 
 import model.Board;
-import model.enums.AlignType;
+import view.components.AlignType;
 import model.rules.Rule;
 import model.rules.RuleImplReversi;
 import model.structs.GameStatistics;
-import model.structs.Point;
-import model.structs.Rect;
-import view.Displayer;
-import view.console.Screen;
 
 /**
  * Factory class for creating and configuring Board instances.
@@ -37,7 +33,6 @@ public class BoardFactory {
     private Rule rule;
     private AlignType verticalAlign;
     private AlignType horizontalAlign;
-    private Displayer displayer;
     
     /**
      * Factory creation method.
@@ -71,7 +66,6 @@ public class BoardFactory {
         return  !whitePlayerName.isEmpty() &&
                 !blackPlayerName.isEmpty() &&
                 !(rule == null) &&
-                !(displayer == null) &&
                 (Board.MIN_BOARD_SIZE <= boardSizeCol && boardSizeCol <= Board.MAX_BOARD_SIZE) &&
                 (Board.MIN_BOARD_SIZE <= boardSizeRow && boardSizeRow <= Board.MAX_BOARD_SIZE);
     }
@@ -164,17 +158,6 @@ public class BoardFactory {
     }
 
     /**
-     * Set the displayer
-     *
-     * @param displayer the displayer
-     * @return This factory instance for method chaining
-     */
-    public BoardFactory setDisplayer(Displayer displayer) {
-        this.displayer = displayer;
-        return this;
-    }
-
-    /**
      * Sets vertical alignment of board content.
      *
      * @param verticalAlign Alignment type (BEGIN, MIDDLE, END)
@@ -225,15 +208,11 @@ public class BoardFactory {
     public Board createBoard() {
         return new Board(
                 rule,
-                displayer.getPainter(
-                        verticalAlign,
-                        horizontalAlign,
-                        boardSizeCol,
-                        boardSizeRow),
                 new GameStatistics(
                         boardSizeCol,
                         boardSizeRow,
                         whitePlayerName,
-                        blackPlayerName));
+                        blackPlayerName,
+                        rule));
     }
 }

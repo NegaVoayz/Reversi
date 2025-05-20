@@ -1,5 +1,8 @@
-package model.rules;
+package model.rules.gameRule;
 
+import model.exceptions.GameException;
+import model.exceptions.OccupiedPositionException;
+import model.exceptions.OutOfBoardException;
 import model.pieces.Piece;
 import model.pieces.PieceImplMonochrome;
 import model.structs.GameStatistics;
@@ -21,14 +24,19 @@ public class GameRuleImplLandfill extends AbstractGameRuleMonochrome {
      * allocate pieceGrid and set the start pieces
      */
     @Override
-    public void initializeGrid(GameStatistics statistics) {
-        basicInitializeGrid(statistics);
+    public Piece[][] initializeGrid(int height, int width){
+        PieceImplMonochrome[][] pieceGrid = basicInitializeGrid(height, width);
 
-        statistics.getPieceGrid()[statistics.getHeight()/2][statistics.getWidth()/2].setPlayer(Player.WHITE);
-        statistics.getPieceGrid()[statistics.getHeight()/2+1][statistics.getWidth()/2].setPlayer(Player.BLACK);
-        statistics.getPieceGrid()[statistics.getHeight()/2][statistics.getWidth()/2+1].setPlayer(Player.BLACK);
-        statistics.getPieceGrid()[statistics.getHeight()/2+1][statistics.getWidth()/2+1].setPlayer(Player.WHITE);
+        pieceGrid[height/2][width/2].setPlayer(Player.WHITE);
+        pieceGrid[height/2+1][width/2].setPlayer(Player.BLACK);
+        pieceGrid[height/2][width/2+1].setPlayer(Player.BLACK);
+        pieceGrid[height/2+1][width/2+1].setPlayer(Player.WHITE);
+
+        return pieceGrid;
     }
+
+    @Override
+    public void initializeExtraInfo(GameStatistics statistics) {}
 
 
     /**
@@ -39,16 +47,21 @@ public class GameRuleImplLandfill extends AbstractGameRuleMonochrome {
      * @return true when valid
      */
     @Override
-    public boolean placePieceValidationCheck(Move move, GameStatistics statistics) {
+    public boolean placePieceValidationCheck(Move move, GameStatistics statistics) throws GameException {
         if( move.end.x <= 0 || move.end.x > statistics.getHeight() ||
                 move.end.y <= 0 || move.end.y > statistics.getWidth() ) {
-            return false;
+            throw new OutOfBoardException(move.end);
         }
         if( ! (statistics.getPieceGrid()[move.end.y][move.end.x] instanceof PieceImplMonochrome pieceImplMonochrome)
                 || !(move.piece instanceof PieceImplMonochrome) ) {
             throw new IllegalArgumentException("Invalid Piece implementation");
         }
-        return pieceImplMonochrome.getPlayer() == Player.NONE;
+
+        if( pieceImplMonochrome.getPlayer() != Player.NONE ) {
+            throw new OccupiedPositionException(move.end);
+        }
+
+        return true;
     }
 
     @Override
@@ -60,7 +73,7 @@ public class GameRuleImplLandfill extends AbstractGameRuleMonochrome {
     }
 
     @Override
-    public boolean placePiece(Move move, GameStatistics statistics) {
+    public boolean placePiece(Move move, GameStatistics statistics) throws GameException {
         if(!placePieceValidationCheck(move, statistics)) {
             return false;
         }

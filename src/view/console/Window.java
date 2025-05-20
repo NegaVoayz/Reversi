@@ -11,6 +11,10 @@ public interface Window {
 
     void paint();
 
+    int print(Point position, String str);
+
+    int println(int y, String str);
+
     boolean allocateView(Rect expectedRect);
 
     void freeView(Rect previousRect);

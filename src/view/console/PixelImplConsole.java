@@ -61,8 +61,8 @@ public class PixelImplConsole implements Pixel {
         return data;
     }
 
-    public void paint() {
-        System.out.print(data);
+    public String paint() {
+        return data;
     }
 
     /**

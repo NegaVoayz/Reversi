@@ -1,5 +1,8 @@
-package model.rules;
+package model.rules.gameRule;
 
+import model.exceptions.GameException;
+import model.exceptions.OccupiedPositionException;
+import model.exceptions.OutOfBoardException;
 import model.pieces.Piece;
 import model.pieces.PieceImplMonochrome;
 import model.enums.Player;
@@ -23,21 +26,29 @@ public class GameRuleImplGomoku extends AbstractGameRuleMonochrome {
     };
 
     @Override
-    public void initializeGrid(GameStatistics statistics) {
-        basicInitializeGrid(statistics);
+    public Piece[][] initializeGrid(int height, int width){
+        return basicInitializeGrid(height, width);
     }
 
     @Override
-    public boolean placePieceValidationCheck(Move move, GameStatistics statistics) {
+    public void initializeExtraInfo(GameStatistics statistics) {}
+
+    @Override
+    public boolean placePieceValidationCheck(Move move, GameStatistics statistics) throws GameException {
         if( move.end.x <= 0 || move.end.x > statistics.getHeight() ||
                 move.end.y <= 0 || move.end.y > statistics.getWidth() ) {
-            return false;
+            throw new OutOfBoardException(move.end);
         }
         if( ! (statistics.getPieceGrid()[move.end.y][move.end.x] instanceof PieceImplMonochrome pieceImplMonochrome)
                 || !(move.piece instanceof PieceImplMonochrome) ) {
             throw new IllegalArgumentException("Invalid Piece implementation");
         }
-        return pieceImplMonochrome.getPlayer() == Player.NONE;
+
+        if( pieceImplMonochrome.getPlayer() != Player.NONE ) {
+            throw new OccupiedPositionException(move.end);
+        }
+
+        return true;
     }
 
     @Override
@@ -46,7 +57,7 @@ public class GameRuleImplGomoku extends AbstractGameRuleMonochrome {
     }
 
     @Override
-    public boolean placePiece(Move move, GameStatistics statistics) {
+    public boolean placePiece(Move move, GameStatistics statistics) throws GameException {
         if(!placePieceValidationCheck(move, statistics)) {
             return false;
         }
@@ -72,7 +83,9 @@ public class GameRuleImplGomoku extends AbstractGameRuleMonochrome {
                 }
             }
         }
-        statistics.setWinner(Player.NONE);
+        if(full) {
+            statistics.setWinner(Player.NONE);
+        }
         return full;
     }
 

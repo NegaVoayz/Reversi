@@ -1,5 +1,10 @@
 package controller;
 
+import model.exceptions.GameException;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -31,6 +36,7 @@ public class InputController {
         CREATE_BOARD, // Create a new board
         LIST_BOARDS,  // List available boards
         PLACE_PIECE,  // Make a move
+        DEMO,       // Load DEMO from the specified file
     }
 
     /**
@@ -89,19 +95,56 @@ public class InputController {
     public boolean executeCommand() {
         try {
             return switch (command.type) {
-                case NONE -> gameController.parseMove(command.content).placePiece()
-                        || gameController.setCurrentBoard(command.content);
+                case NONE -> {
+                    if(isAllDigits(command.content)) yield gameController.setCurrentBoard(command.content);
+                    else yield gameController.parseMove(command.content).placePiece();
+                }
                 case ERROR -> false;
                 case HELP -> showHelp();
                 case CHANGE_BOARD -> gameController.setCurrentBoard(command.content);
                 case CREATE_BOARD -> gameController.parseCreate(command.content).createBoard();
                 case LIST_BOARDS  -> gameController.selectBoards(command.content).listBoards();
                 case PLACE_PIECE  -> gameController.parseMove(command.content).placePiece();
+                case DEMO         -> runDemo(command.content);
             };
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | GameException e) {
             System.out.println(e.getMessage());
         }
         return false;
+    }
+
+    private boolean isAllDigits(String string) {
+        for (char c : string.toCharArray()) {
+            if (!Character.isDigit(c)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean runDemo(String path) {
+        try(Scanner scanner = new Scanner(new File(path))) {
+            System.out.println("Demo activated.");
+            while (scanner.hasNextLine()) {
+                Thread.sleep(Duration.ofSeconds(1));
+                String line = scanner.nextLine();
+                command.content = line;
+                boolean isValidMove = this
+                        .parseCommand()
+                        .executeCommand();
+                System.out.println("Current Command > "+line);
+                if( !isValidMove ) {
+                    System.out.println("oOps! invalid operation. Try input 'help' for help.");
+                }
+            }
+            System.out.println("Demo exited.");
+        } catch (FileNotFoundException e) {
+            throw new IllegalArgumentException(String.format("File %s not found", path));
+        } catch (InterruptedException e) {
+            System.out.println("How the hell can wait be a");
+            throw new RuntimeException(e);
+        }
+        return true;
     }
 
     /**
@@ -144,6 +187,7 @@ public class InputController {
             case "create" -> handleCreate(tokens);
             case "list", "ls" -> handleList(tokens);
             case "quit" -> handleQuit();
+            case "demo" -> handleDemo(tokens);
             case null -> CommandType.ERROR;
             default -> CommandType.NONE;
         };
@@ -249,6 +293,20 @@ public class InputController {
     }
 
     /**
+     * Handler of the 'demo' command
+     *
+     * @return {@link CommandType#DEMO} if succeeded,
+     * {@link CommandType#ERROR} if failed.
+     */
+    private CommandType handleDemo(Queue<String> tokens) {
+        if(tokens.size() != 1) {
+            return CommandType.ERROR;
+        }
+        command.content = tokens.poll();
+        return CommandType.DEMO;
+    }
+
+    /**
      * Show all commands
      *
      * @return true, always success
@@ -265,6 +323,7 @@ public class InputController {
         System.out.println("| move           | row-first position (e.g. 3D)           | place piece at [position]   |");
         System.out.println("| create board   | [game mode] ([column size] [row size]) | create new board            |");
         System.out.println("| list/ls        | ([mode: game mode/current])            | list the boards.            |");
+        System.out.println("| demo           | path                                   | load demo from a file       |");
         System.out.println("|                | you can omit `move` or `switch to`     | whatever you aim at         |");
         return true;
     }

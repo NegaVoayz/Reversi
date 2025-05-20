@@ -1,7 +1,6 @@
 package model.pieces;
 
 import model.enums.Player;
-import view.console.Pixel;
 
 public abstract class Piece {
 
@@ -21,5 +20,5 @@ public abstract class Piece {
 
     public abstract void setPiece(Piece piece);
 
-    public abstract Pixel getPixel();
+    public abstract int getCode();
 }

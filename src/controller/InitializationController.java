@@ -3,10 +3,10 @@ package controller;
 import model.Board;
 import model.enums.Player;
 import model.factories.BoardFactory;
+import model.rules.RuleImplBomb;
 import model.rules.RuleImplGomoku;
 import model.rules.RuleImplLandfill;
 import model.rules.RuleImplReversi;
-import view.Displayer;
 import view.console.Screen;
 
 import java.util.ArrayList;
@@ -42,14 +42,12 @@ public class InitializationController {
      *
      * @param scanner Input scanner for user interactions
      * @param boards Collection to store initialized boards
-     * @param displayer Display screen for rendering game elements
      */
-    public InitializationController(Scanner scanner, ArrayList<Board> boards, Displayer displayer) {
+    public InitializationController(Scanner scanner, ArrayList<Board> boards) {
         this.scanner = scanner;
         this.boards = boards;
         this.boardFactory = BoardFactory
                 .create()
-                .setDisplayer(displayer)
                 .useDefaultVerticalAlign()
                 .useDefaultHorizontalAlign();
     }
@@ -82,6 +80,8 @@ public class InitializationController {
         boardFactory.setRule(RuleImplLandfill.getRule());
         boards.add(boardFactory.createBoard());
         boardFactory.setRule(RuleImplGomoku.getRule());
+        boards.add(boardFactory.createBoard());
+        boardFactory.setRule(RuleImplBomb.getRule());
         boards.add(boardFactory.createBoard());
     }
 

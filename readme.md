@@ -24,6 +24,7 @@
   | move           | row-first position (e.g. 3D)                     | place piece at [position]   |
   | create board   | [mode: reversi/peace] ([column size] [row size]) | create new board            |
   | list/ls        | ([mode: reversi/peace/current])                  | list the boards.            |
+  | demo           | path                                             | load demo from a file       |
   |                | you can omit `move` or `switch to`               | whatever you aim at         |
 
 ### Core Design:
@@ -153,3 +154,29 @@ Added command quit.
 #### V2.4.4
 
 Added new rule gomoku.
+
+#### V2.5.0
+
+Extracts game statistics as a whole structure.
+
+#### V2.9.0
+
+Extracts the whole game display to `view` package.
+
+Added new game rule `bomb`
+
+#### V3.0.0
+
+Deprecated displayer and returns the scene building function back to the `Board` and `GameController`.
+
+Added **Unit Test** for renderer, since such an analyzer is too big to debug when connected with the whole game.
+
+Now the `model` layer interacts with `view` layer by passing an `AbstractDisplayBlock`, something like html, to the specified renderer to show the scene. The new feature allows **dynamic** generated scene rendered real-time and **flexible**.
+
+#### V3.1.0
+
+Added variable exceptions for illegal inputs. Now you can be warned in various ways!
+
+Added new command `demo`.
+
+I promise I will update this document later but not now : )

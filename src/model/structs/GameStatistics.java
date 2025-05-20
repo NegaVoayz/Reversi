@@ -3,6 +3,8 @@ package model.structs;
 import model.enums.Player;
 import model.pieces.Piece;
 import model.rules.Rule;
+import view.components.AlignType;
+import view.components.DisplayBlock;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -22,8 +24,10 @@ public class GameStatistics {
     private Player winner;
     private int round;
     private final Queue<Move> moves;
+    private Object extraInfo;
+    private DisplayBlock view;
 
-    public GameStatistics(int height, int width, String whitePlayerName, String blackPlayerName) {
+    public GameStatistics(int height, int width, String whitePlayerName, String blackPlayerName, Rule rule) {
         this.moves = new LinkedList<>();
         // Validate board size
         if(height < MIN_BOARD_SIZE || height > MAX_BOARD_SIZE ||
@@ -38,10 +42,23 @@ public class GameStatistics {
         }
         this.whitePlayerName = whitePlayerName;
         this.blackPlayerName = blackPlayerName;
-        this.pieceGrid = new Piece[height+2][width+2]; /* +2 for border */
+        this.pieceGrid = rule.getGameRule().initializeGrid(height, width);
         currentPlayer = Player.BLACK;
         winner = null;
         round = 1;
+        view = new DisplayBlock(new Rect(0,0,0,0), AlignType.MIDDLE, AlignType.BEGIN);
+    }
+
+    public DisplayBlock getView() {
+        return view;
+    }
+
+    public void setExtraInfo(Object extraInfo) {
+        this.extraInfo = extraInfo;
+    }
+
+    public Object getExtraInfo() {
+        return extraInfo;
     }
 
     public void switchPlayer() {

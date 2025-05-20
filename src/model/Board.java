@@ -1,18 +1,12 @@
 package model;
 
 import model.enums.Player;
-import model.pieces.Piece;
-import model.pieces.PieceImplMonochrome;
-import model.rules.InputRule;
+import model.exceptions.GameException;
+import model.rules.inputRule.InputRule;
 import model.rules.Rule;
 import model.structs.GameStatistics;
 import model.structs.Move;
-import model.structs.Point;
-import model.structs.Rect;
-import view.Painter;
-import view.console.PixelImplConsole;
-import view.console.View;
-import view.console.Window;
+import view.components.AbstractDisplayBlock;
 
 /**
  * Represents a game board with all its state and rendering logic.
@@ -32,16 +26,13 @@ public class Board{
     /** The answer to the Ultimate Question of Life, the Universe, and Everything */
     public static final int ULTIMATE_ANSWER = 42;
     /** Maximum allowed board size (width/height) */
-    public static final int MAX_BOARD_SIZE = 10;
+    public static final int MAX_BOARD_SIZE = 15;
     /** Minimum allowed board size (width/height) */
     public static final int MIN_BOARD_SIZE = 4;
 
     // Game State
     private final Rule rule;
     private final GameStatistics statistics;
-
-    // Game Display
-    private final Painter painter;
 
     /**
      * Constructs a new game board.
@@ -50,15 +41,14 @@ public class Board{
      * @param statistics Game statistics implementation
      * @throws IllegalArgumentException if parameters are invalid
      */
-    public Board(Rule rule, Painter painter, GameStatistics statistics) {
-
+    public Board(Rule rule, GameStatistics statistics) {
         this.rule = rule;
         this.statistics = statistics;
-        this.painter = painter;
-        this.rule.getGameRule().initializeGrid(this.statistics); /* Initialize game grid according to rules */
+        this.rule.getGameRule().initializeExtraInfo(this.statistics); /* Initialize game grid according to rules */
 
         // Initial setup
-        painter.updateGameStatistics(statistics, rule);
+        this.rule.getDisplayRule().buildView(this.statistics, this.rule);
+        this.rule.getDisplayRule().update(this.statistics, this.rule);
     }
 
     /**
@@ -141,20 +131,23 @@ public class Board{
      * @param move Contains target position and player
      * @return true if the move was valid and executed, false otherwise
      */
-    public boolean placePiece(Move move) {
+    public boolean placePiece(Move move) throws GameException {
         // Validate move coordinates
-        if(!this.rule.getGameRule().placePieceValidationCheck(move, statistics)) {
+        if(!rule.getGameRule().placePieceValidationCheck(move, statistics)) {
             return false;
         }
 
         // Execute move
-        this.rule.getGameRule().placePiece(move, statistics);
+        rule.getGameRule().placePiece(move, statistics);
 
         // Switch players
-        this.rule.getGameRule().nextPlayer(statistics);
+        rule.getGameRule().nextPlayer(statistics);
+
+        // Check Game Over
+        rule.getGameRule().gameOverCheck(statistics);
 
         // Update display
-        painter.updateGameStatistics(statistics, rule);
+        rule.getDisplayRule().update(statistics, rule);
 
         return true;
     }
@@ -162,8 +155,8 @@ public class Board{
     /**
      * Renders the board to the display.
      */
-    public void show() {
-        painter.flush();
+    public AbstractDisplayBlock show() {
+        return statistics.getView();
     }
 
 }

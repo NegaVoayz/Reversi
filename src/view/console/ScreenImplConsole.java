@@ -70,12 +70,15 @@ public class ScreenImplConsole implements Screen {
     @Override
     public boolean forcePaint() {
         Screen.clear();
+        StringBuilder sb = new StringBuilder();
+        sb.ensureCapacity(rect.right - rect.left);
         for(int i = rect.top; i < rect.bottom; i++) {
+            sb.setLength(0);
             for(int j = rect.left; j < rect.right; j++) {
-                buffer[i][j].paint();
+                sb.append(buffer[i][j].paint());
                 buffer[i][j].flush();
             }
-            System.out.print('\n');
+            System.out.println(sb);
         }
         dirty = 0;
         return true;
@@ -88,7 +91,6 @@ public class ScreenImplConsole implements Screen {
             for(int j = rect.left; j < rect.right; j++) {
                 buffer[i][j].set(pixelBlank);
             }
-            System.out.print('\n');
         }
         return 0;
     }

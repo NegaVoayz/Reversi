@@ -1,4 +1,4 @@
-package model.enums;
+package view.components;
 
 public enum AlignType{
     BEGIN,

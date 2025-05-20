@@ -115,6 +115,43 @@ public class WindowImplConsole implements Window {
         screen.paint();
     }
 
+    /**
+     * print string on canvas
+     * @param position the starting x-position
+     * @param str the string to be print
+     * @return number of characters printed
+     */
+    @Override
+    public int print(Point position, String str) {
+        int cnt = 0;
+        Point shift = new Point(1,0);
+        for(int i = 0; i < str.length(); i++) {
+            cnt+=setPixel(position, new PixelImplConsole(str.charAt(i)));
+            position.translate(shift);
+        }
+        return cnt;
+    }
+
+    /**
+     * print string on canvas, rewrite the whole line
+     * @param y the starting line position
+     * @param str the string to be print
+     * @return number of characters changed
+     */
+    @Override
+    public int println(int y, String str) {
+        int cnt = 0;
+        Point position = new Point(0,y);
+        for(position.x = 0; position.x < str.length(); position.x++) {
+            cnt+=setPixel(position, new PixelImplConsole(str.charAt(position.x)));
+        }
+        Pixel temp = new PixelImplConsole();
+        for(; position.x < rect.right - rect.left; position.x++ ) {
+            cnt+=setPixel(position, temp);
+        }
+        return cnt;
+    }
+
 
     /**
      * clear the screen buffer
